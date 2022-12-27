@@ -49,10 +49,7 @@
     </group>
 
     <!-- Launch image_view outside the container node -->
-    <node pkg="image_view" exec="image_view" name="image_view_raw" namespace="/">
-      <remap from="image" to="$(var namespace)/$(var camera_name)/$(var image_topic)"/>
-    </node>
-    <node pkg="image_view" exec="image_view" name="image_view_or" namespace="/">
+    <node pkg="image_view" exec="image_view" name="image_view" namespace="/">
       <remap from="image" to="/perception/object_recognition/detection/rois$(var camera_id)/debug/image"/>
     </node>
   </group>
