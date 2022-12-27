@@ -1,9 +1,9 @@
 <launch>
   <arg name="camera_id" default="0" description="Camera index"/>
   <arg name="use_sensor_data_qos" default="false" description="Flat to be passed to v4l2_camera.launch.py. If true, the reliability of image topic QoS will be BEST_EFFORT, otherwise be RELIABLE"/>
+  <arg name="calib_config_file" default="$(find-pkg-share intrinsic_camera_calibrator)/config/intrinsics_calibrator.yaml"/>
 
   <group>
-    <let name="current_dir" value="$(dirname)"/> <!-- Since $(dirname) result may be overwritten during the following process, taking cache here-->
     <let name="namespace" value="/sensing/camera"/>
     <let name="image_topic" value="image_raw"/>
     <let name="camera_name" value="camera$(var camera_id)"/>
@@ -20,5 +20,8 @@
       <arg name="camera_info_url" value="$(var camera_info_url)"/>
       <arg name="use_sensor_data_qos" value="$(var use_sensor_data_qos)"/>
     </include>
+
+    <!-- Launch intrinsic_camera_calibrator -->
+    <node pkg="intrinsic_camera_calibrator" exec="camera_calibrator" name="camera_calibrator" output="screen" args="$(var calib_config_file)"/>
   </group>
 </launch>
