@@ -7,17 +7,16 @@
   <arg name="label_file" default="label.txt" description="YOLOX label file"/>
 
   <group>
-    <let name="current_dir" value="$(dirname)"/> <!-- Since $(dirname) result may be overwritten during the following process, taking cache here-->
     <let name="namespace" value="/sensing/camera"/>
-    <let name="image_topic" value="image_raw"/>
     <let name="camera_name" value="camera$(var camera_id)"/>
+    <let name="image_topic" value="image_raw"/>
     <let name="v4l2_camera_param_path" value="$(find-pkg-share individual_params)/config/default/v4l2_camera.param.yaml"/>
     <let name="camera_info_url" value="file://$(find-pkg-share individual_params)/config/default/c1_camera_info.yaml"/>
     <let name="trigger_param_path" value="$(find-pkg-share individual_params)/config/default/trigger.param.yaml"/>
+    <let name="container_name" value="object_recognition_container$(var camera_id)"/>
 
     <!-- Create container node to pack camera node and object detector -->
-    <let name="container_name" value="object_recognition_continer$(var camera_id)"/>
-    <include file="$(var current_dir)/object_recognition_container.launch.py">
+    <include file="$(find-pkg-share perception_ecu_or_launch)/launch/object_recognition_container.launch.py">
       <arg name="container" value="$(var container_name)"/>
     </include>
 
@@ -25,15 +24,15 @@
     <include file="$(find-pkg-share v4l2_camera)/launch/v4l2_camera.launch.py">
       <arg name="container" value="$(var container_name)"/>
       <arg name="v4l2_camera_namespace" value="$(var namespace)"/>
+      <arg name="v4l2_camera_param_path" value="$(var v4l2_camera_param_path)"/>
       <arg name="image_topic" value="$(var image_topic)"/>
       <arg name="camera_name" value="$(var camera_name)"/>
-      <arg name="v4l2_camera_param_path" value="$(var v4l2_camera_param_path)"/>
       <arg name="camera_info_url" value="$(var camera_info_url)"/>
       <arg name="use_sensor_data_qos" value="$(var use_sensor_data_qos)"/>
     </include>
 
     <!-- Launch tensorrt_yolox inside the container node -->
-    <include file="$(var current_dir)/object_recognition.launch.py">
+    <include file="$(find-pkg-share perception_ecu_or_launch)/launch/object_recognition.launch.py">
       <arg name="container" value="$(var container_name)"/>
       <arg name="camera_id" value="$(var camera_id)"/>
       <arg name="data_path" value="$(var data_path)"/>
@@ -48,5 +47,13 @@
         <param from="$(var trigger_param_path)"/>
       </node>
     </group>
+
+    <!-- Launch image_view outside the container node -->
+    <node pkg="image_view" exec="image_view" name="image_view_raw" namespace="/">
+      <remap from="image" to="$(var namespace)/$(var camera_name)/$(var image_topic)"/>
+    </node>
+    <node pkg="image_view" exec="image_view" name="image_view_or" namespace="/">
+      <remap from="image" to="/perception/object_recognition/detection/rois$(var camera_id)/debug/image"/>
+    </node>
   </group>
 </launch>

@@ -12,6 +12,7 @@
 
   <exec_depend>v4l2_camera</exec_depend>
   <exec_depend>sensor_trigger</exec_depend>
+  <exec_depend>image_view</exec_depend>
   <exec_depend>image_transport_plugins</exec_depend>
   <exec_depend>individual_params</exec_depend>
   <exec_depend>tensorrt_yolox</exec_depend>

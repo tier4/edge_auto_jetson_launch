@@ -43,7 +43,9 @@ def generate_launch_description():
                 (
                     "~/in/image",
                     [
-                        LaunchConfiguration("input_image_topic"),
+                        "/sensing/camera/camera",
+                        LaunchConfiguration("camera_id"),
+                        "/image_raw",
                     ],
                 ),
                 (
