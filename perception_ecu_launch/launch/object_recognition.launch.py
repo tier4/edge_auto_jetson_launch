@@ -26,62 +26,64 @@ def generate_launch_description():
         launch_arguments.append(DeclareLaunchArgument(name, default_value=default_value))
 
     add_launch_arg("container")
-    add_launch_arg("camera_id")
-    add_launch_arg("data_path", "/opt/autoware")
-    add_launch_arg("model_file", "yolox-tiny.onnx")
-    add_launch_arg("label_file", "label.txt")
-    add_launch_arg("input_image_topic", "image_raw")
+    add_launch_arg("namespace")
+    add_launch_arg("input_topic")
+    add_launch_arg("output_topic_name")
+    add_launch_arg("model_path", "yolox-tiny.onnx")
+    add_launch_arg("label_path", "label.txt")
     add_launch_arg("use_intra_process", "True")
 
     composable_nodes = [
         ComposableNode(
             package="tensorrt_yolox",
             plugin="tensorrt_yolox::TrtYoloXNode",
-            name=["tensorrt_yolox", LaunchConfiguration("camera_id")],
-            namespace=["/perception/object_recognition/detection"],
+            name=["tensorrt_yolox_", LaunchConfiguration("output_topic_name")],
+            namespace=LaunchConfiguration("namespace"),
             remappings=[
                 (
-                    "~/in/image",
-                    [
-                        LaunchConfiguration("input_image_topic"),
-                    ],
+                    "~/in/image", LaunchConfiguration("input_topic")
                 ),
                 (
                     "~/out/objects",
                     [
-                        "/perception/object_recognition/detection/rois",
-                        LaunchConfiguration("camera_id"),
+                        LaunchConfiguration("namespace"),
+                        "/",
+                        LaunchConfiguration("output_topic_name"),
                     ],
                 ),
                 (
                     "~/out/image",
                     [
-                        "/perception/object_recognition/detection/rois",
-                        LaunchConfiguration("camera_id"),
+                        LaunchConfiguration("namespace"),
+                        "/",
+                        LaunchConfiguration("output_topic_name"),
                         "/debug/image",
                     ],
                 ),
                 (
                     "~/out/image/compressed",
                     [
-                        "/perception/object_recognition/detection/rois",
-                        LaunchConfiguration("camera_id"),
+                        LaunchConfiguration("namespace"),
+                        "/",
+                        LaunchConfiguration("output_topic_name"),
                         "/debug/image/compressed",
                     ],
                 ),
                 (
                     "~/out/image/compressedDepth",
                     [
-                        "/perception/object_recognition/detection/rois",
-                        LaunchConfiguration("camera_id"),
+                        LaunchConfiguration("namespace"),
+                        "/",
+                        LaunchConfiguration("output_topic_name"),
                         "/debug/image/compressedDepth",
                     ],
                 ),
                 (
                     "~/out/image/theora",
                     [
-                        "/perception/object_recognition/detection/rois",
-                        LaunchConfiguration("camera_id"),
+                        LaunchConfiguration("namespace"),
+                        "/",
+                        LaunchConfiguration("output_topic_name"),
                         "/debug/image/theora",
                     ],
                 ),
@@ -89,14 +91,10 @@ def generate_launch_description():
             parameters=[
                 {
                     "model_path": [
-                        LaunchConfiguration("data_path"),
-                        "/",
-                        LaunchConfiguration("model_file"),
+                        LaunchConfiguration("model_path"),
                     ],
                     "label_path": [
-                        LaunchConfiguration("data_path"),
-                        "/",
-                        LaunchConfiguration("label_file"),
+                        LaunchConfiguration("label_path"),
                     ],
                     "precision": "fp16",
                 },

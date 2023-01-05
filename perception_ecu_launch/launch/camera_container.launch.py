@@ -43,7 +43,7 @@ def generate_launch_description():
         condition=IfCondition(LaunchConfiguration("use_multithread")),
     )
 
-    object_recognition_container = ComposableNodeContainer(
+    camera_container = ComposableNodeContainer(
         name=[LaunchConfiguration("container")],
         namespace="",
         package="rclcpp_components",
@@ -57,6 +57,6 @@ def generate_launch_description():
             *launch_arguments,
             set_container_executable,
             set_container_mt_executable,
-            object_recognition_container,
+            camera_container,
         ]
     )
