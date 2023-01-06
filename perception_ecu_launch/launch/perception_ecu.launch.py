@@ -76,13 +76,13 @@ def generate_camera_processes(context: LaunchContext):
         print(e)
         return
 
-    def create_individual_param_path(filename):
+    def create_individual_param_path(file_name):
         config_basedir_path = PathJoinSubstitution(
             [FindPackageShare("individual_params"), "config", LaunchConfiguration("vehicle_id")])
-        return PathJoinSubstitution([config_basedir_path, camera_name, filename])
+        return PathJoinSubstitution([config_basedir_path, camera_name, file_name])
 
-    def create_launch_path(pkgname, filename):
-        return PathJoinSubstitution([FindPackageShare(pkgname), "launch", filename])
+    def create_launch_path(pkg_name, file_name):
+        return PathJoinSubstitution([FindPackageShare(pkg_name), "launch", file_name])
 
     def create_container_name(camera_name):
         return "camera_container_{}".format(camera_name)
