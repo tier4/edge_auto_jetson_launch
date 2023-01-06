@@ -76,7 +76,7 @@ def generate_camera_processes(context: LaunchContext):
         print(e)
         return
 
-    def create_indivisual_param_path(filename):
+    def create_individual_param_path(filename):
         config_basedir_path = PathJoinSubstitution(
             [FindPackageShare("individual_params"), "config", LaunchConfiguration("vehicle_id")])
         return PathJoinSubstitution([config_basedir_path, camera_name, filename])
