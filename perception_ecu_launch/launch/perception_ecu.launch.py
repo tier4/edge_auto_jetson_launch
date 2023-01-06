@@ -132,7 +132,7 @@ def generate_camera_processes(context: LaunchContext):
                 "camera_name": camera_name,
                 "image_topic": LaunchConfiguration("image_topic_name"),
                 "use_sensor_data_qos": LaunchConfiguration("use_sensor_data_qos"),
-                "v4l2_camera_namepace": LaunchConfiguration("sensing_namespace"),
+                "v4l2_camera_namespace": LaunchConfiguration("sensing_namespace"),
                 "v4l2_camera_param_path": config_v4l2_path,
             },
         ))
