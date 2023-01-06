@@ -107,7 +107,7 @@ def generate_camera_processes(context: LaunchContext):
         container_name = create_container_name(camera_name)
         rois_name = create_rois_name(camera_name)
 
-        config_v4l2_path = create_indivisual_param_path("v4l2_camera.param.yaml")
+        config_v4l2_path = create_individual_param_path("v4l2_camera.param.yaml")
         config_info_path = create_individual_param_path("camera_info.yaml")
         config_trigger_path = create_individual_param_path("trigger.param.yaml")
 
