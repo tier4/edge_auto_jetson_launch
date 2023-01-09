@@ -2,7 +2,7 @@
 
 A launch configuration repository for [tier4/perception_ecu_container](https://github.com/tier4/perception_ecu_container).
 
-## Setting up camera processing
+## Setting up camera processing mode
 
 In `config/camera_modes.yaml`, specify the camera processing mode.
 By default, only one camera is activated as `object_recognition` mode.
@@ -34,24 +34,24 @@ camera7: disable
 
 Currently, the following modes are supported. Additional modes will be added in the future.
 
-| Mode               | Description                                  |
-| ------------------ | -------------------------------------------- |
-| disable            | Camera will not be activated.                |
-| image_capture      | Activate only a camera driver.               |
-| object_recognition | Activate camera driver & object recognition. |
+| Mode               | Description                                 |
+| ------------------ | ------------------------------------------- |
+| disable            | Camera will not be activated                |
+| image_capture      | Activate only a camera driver               |
+| object_recognition | Activate camera driver & object recognition |
 
 Device ports, calibration parameters, etc. required to activate each camera are defined in `individual_params`.
 Please refer to [perception_ecu_individual_params](https://github.com/tier4/perception_ecu_individual_params).
 
 ## Launch camera processing
 
-The following commands start up the camera's processing process
+The following commands start up your camera processing.
 
 ```sh
 ros2 launch perception_ecu_launch perception_ecu.launch.py
 ```
 
-If you define `camera_modes.yaml` yourself, you can launch the camera processing process below.
+If you define `camera_modes.yaml` by yourself, you can launch your camera processing by the following commands.
 
 ```sh
 ros2 launch perception_ecu_launch perception_ecu.launch.py \
