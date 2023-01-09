@@ -97,7 +97,7 @@ def generate_camera_processes(context: LaunchContext):
         enable_object_recognition = False
         if camera_mode == "disable":
             continue
-        elif camera_mode == "image":
+        elif camera_mode == "image_capture":
             enable_object_recognition = False
         elif camera_mode == "object_recognition":
             enable_object_recognition = True
