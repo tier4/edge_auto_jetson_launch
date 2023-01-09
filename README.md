@@ -58,6 +58,16 @@ ros2 launch perception_ecu_launch perception_ecu.launch.py \
     camera_modes_path:=<your-path>/camera_modes.yaml
 ```
 
+For cameras that support FSYNC input, the shutter trigger can be input by using [tier4/sensor_trigger](https://github.com/tier4/sensor_trigger) package and by the following launch option.
+
+```sh
+ros2 launch perception_ecu_launch perception_ecu.launch.py \
+    launch_sensor_trigger:=True
+```
+
+For [TIER IV Automotive HDR Camera C1](https://sensor.tier4.jp/automotive-hdr-camera), slave mode setting is required.
+Please refer to [tier4/tier4_automotive_hdr_camera](https://github.com/tier4/tier4_automotive_hdr_camera).
+
 ## Related Links
 - [tier4/perception_ecu_container](https://github.com/tier4/perception_ecu_container)
 - [tier4/perception_ecu_individual_params](https://github.com/tier4/perception_ecu_individual_params)

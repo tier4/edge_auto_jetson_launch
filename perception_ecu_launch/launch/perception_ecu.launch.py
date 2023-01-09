@@ -46,7 +46,7 @@ def generate_arguments():
     actions.append(create_launch_arg("vehicle_id", "default"))
     actions.append(create_launch_arg("use_sensor_data_qos", "False"))
 
-    actions.append(create_launch_arg("launch_sensor_trigger", "True"))
+    actions.append(create_launch_arg("launch_sensor_trigger", "False"))
 
     actions.append(create_launch_arg("perception_namespace",
                    "/perception/object_recognition/detection"))
