@@ -128,7 +128,7 @@ def generate_camera_processes(context: LaunchContext):
             path=launch_driver_path,
             args={
                 "container": container_name,
-                "camera_info_url": config_info_path,
+                "camera_info_url": ["file://", config_info_path],
                 "camera_name": camera_name,
                 "image_topic": LaunchConfiguration("image_topic_name"),
                 "use_sensor_data_qos": LaunchConfiguration("use_sensor_data_qos"),
