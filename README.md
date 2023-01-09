@@ -36,11 +36,11 @@ Currently, the following modes are supported. Additional modes will be added in 
 
 | Mode               | Description                                  |
 | ------------------ | -------------------------------------------- |
-| disable            | Camera will not be activated                 |
+| disable            | Camera will not be activated.                |
 | image_capture      | Activate only a camera driver.               |
 | object_recognition | Activate camera driver & object recognition. |
 
-Device ports, calibration parameters, etc. required to activate each camera are defined in `iindividual_params`.
+Device ports, calibration parameters, etc. required to activate each camera are defined in `individual_params`.
 Please refer to [perception_ecu_individual_params](https://github.com/tier4/perception_ecu_individual_params).
 
 ## Launch camera processing
