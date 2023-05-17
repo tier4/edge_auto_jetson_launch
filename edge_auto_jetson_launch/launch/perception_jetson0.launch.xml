@@ -1,0 +1,31 @@
+<launch>
+  <arg name="vehicle_id" />
+
+  <group>
+    <push-ros-namespace namespace="sensing/camera" />
+
+    <!-- camera0 -->
+    <group>
+      <let name="camera_name" value="camera0" />
+      <push-ros-namespace namespace="$(var camera_name)" />
+      <include file="$(find-pkg-share edge_auto_jetson_launch)/launch/v4l2_camera.launch.xml">
+        <arg name="camera_frame_id" value="$(var camera_name)" />
+        <arg name="v4l2_camera_param_path" value="$(find-pkg-share individual_params)/config/$(var vehicle_id)/$(var camera_name)/v4l2_camera.param.yaml" />
+        <arg name="camera_info_url" value="$(find-pkg-share individual_params)/config/$(var vehicle_id)/$(var camera_name)/camera_info.yaml" />
+        <arg name="publish_rate" value="10.0" />
+      </include>
+    </group>
+
+    <!-- camera1 -->
+    <group>
+      <let name="camera_name" value="camera1" />
+      <push-ros-namespace namespace="$(var camera_name)" />
+      <include file="$(find-pkg-share edge_auto_jetson_launch)/launch/v4l2_camera.launch.xml">
+        <arg name="camera_frame_id" value="$(var camera_name)" />
+        <arg name="v4l2_camera_param_path" value="$(find-pkg-share individual_params)/config/$(var vehicle_id)/$(var camera_name)/v4l2_camera.param.yaml" />
+        <arg name="camera_info_url" value="$(find-pkg-share individual_params)/config/$(var vehicle_id)/$(var camera_name)/camera_info.yaml" />
+        <arg name="publish_rate" value="10.0" />
+      </include>
+    </group>
+  </group>
+</launch>
