@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>perception_ecu_calib_launch</name>
+  <name>edge_auto_jetson_launch</name>
   <version>0.1.0</version>
-  <description>The package for perception ECU to launch series of calibration nodes</description>
+  <description>The package for meta-package for edge-auto-jetson launchers</description>
 
   <maintainer email="aohsato@gmail.com">Akihito OHSATO</maintainer>
   <license>Apache License 2.0</license>
@@ -12,12 +12,13 @@
 
   <exec_depend>v4l2_camera</exec_depend>
   <exec_depend>sensor_trigger</exec_depend>
+  <exec_depend>image_view</exec_depend>
   <exec_depend>image_transport_plugins</exec_depend>
   <exec_depend>individual_params</exec_depend>
-  <exec_depend>intrinsic_camera_calibrator</exec_depend>
+  <exec_depend>tensorrt_yolox</exec_depend>
 
   <test_depend>ament_lint_auto</test_depend>
-  <test_depend>autoware_lint_common</test_depend>
+  <test_depend>ament_lint_common</test_depend>
 
   <export>
     <build_type>ament_cmake</build_type>
