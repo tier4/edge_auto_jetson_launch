@@ -17,7 +17,7 @@
         <arg name="container_name" value="$(var container_name)" />
         <arg name="camera_frame_id" value="$(var camera_name)" />
         <arg name="v4l2_camera_param_path" value="$(find-pkg-share individual_params)/config/$(var vehicle_id)/$(var camera_name)/v4l2_camera.param.yaml" />
-        <arg name="camera_info_url" value="$(find-pkg-share individual_params)/config/$(var vehicle_id)/$(var camera_name)/camera_info.yaml" />
+	<arg name="camera_info_url" value="file://$(find-pkg-share individual_params)/config/$(var vehicle_id)/$(var camera_name)/camera_info.yaml" />
         <arg name="publish_rate" value="10.0" />
       </include>
     </group>
@@ -57,7 +57,7 @@
         <arg name="container_name" value="$(var container_name)" />
         <arg name="camera_frame_id" value="$(var camera_name)" />
         <arg name="v4l2_camera_param_path" value="$(find-pkg-share individual_params)/config/$(var vehicle_id)/$(var camera_name)/v4l2_camera.param.yaml" />
-        <arg name="camera_info_url" value="$(find-pkg-share individual_params)/config/$(var vehicle_id)/$(var camera_name)/camera_info.yaml" />
+	<arg name="camera_info_url" value="file://$(find-pkg-share individual_params)/config/$(var vehicle_id)/$(var camera_name)/camera_info.yaml" />
         <arg name="publish_rate" value="10.0" />
       </include>
     </group>
