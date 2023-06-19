@@ -1,31 +1,84 @@
 <launch>
   <arg name="vehicle_id" />
 
+  <!-- camera0 -->
   <group>
-    <push-ros-namespace namespace="sensing/camera" />
+    <let name="camera_id" value="0"/>
+    <let name="camera_name" value="camera$(var camera_id)" />
 
-    <!-- camera0 -->
+    <!-- Create container in which all nodes are loaded -->
+    <let name="container_name" value="$(var camera_name)_container" />
+    <node pkg="rclcpp_components" exec="component_container_mt" name="$(var container_name)" namespace="/"/>
+
+    <!-- sensing -->
     <group>
-      <let name="camera_name" value="camera0" />
-      <push-ros-namespace namespace="$(var camera_name)" />
+      <push-ros-namespace namespace="sensing/camera/$(var camera_name)" />
       <include file="$(find-pkg-share edge_auto_jetson_launch)/launch/v4l2_camera.launch.xml">
-        <arg name="camera_frame_id" value="$(var camera_name)" />
+        <arg name="container_name" value="$(var container_name)" />
+	      <arg name="camera_frame_id" value="$(var camera_name)/camera_optical_link" />
         <arg name="v4l2_camera_param_path" value="$(find-pkg-share individual_params)/config/$(var vehicle_id)/$(var camera_name)/v4l2_camera.param.yaml" />
-        <arg name="camera_info_url" value="$(find-pkg-share individual_params)/config/$(var vehicle_id)/$(var camera_name)/camera_info.yaml" />
+	      <arg name="camera_info_url" value="file://$(find-pkg-share individual_params)/config/$(var vehicle_id)/$(var camera_name)/camera_info.yaml" />
         <arg name="publish_rate" value="10.0" />
       </include>
     </group>
 
-    <!-- camera1 -->
+    <!-- perception -->
     <group>
-      <let name="camera_name" value="camera1" />
-      <push-ros-namespace namespace="$(var camera_name)" />
+      <push-ros-namespace namespace="perception/object_recognition/detection" />
+      <include file="$(find-pkg-share edge_auto_jetson_launch)/launch/tensorrt_yolox.launch.xml">
+        <arg name="container_name" value="$(var container_name)" />
+        <arg name="input/image" value="/sensing/camera/$(var camera_name)/image_raw" />
+        <arg name="output/objects" value="rois$(var camera_id)" />
+      </include>
+
+      <include file="$(find-pkg-share edge_auto_jetson_launch)/launch/bytetrack.launch.xml">
+        <arg name="container_name" value="$(var container_name)" />
+        <arg name="input/objects" value="rois$(var camera_id)" />
+        <arg name="input/image" value="/sensing/camera/$(var camera_name)/image_raw" />
+        <arg name="input/image/is_raw" value="True" />
+        <arg name="output/objects" value="tracked/rois$(var camera_id)" />
+      </include>
+    </group>
+  </group>  <!-- camera0  -->
+
+  <!-- camera1 -->
+  <group>
+    <let name="camera_id" value="1"/>
+    <let name="camera_name" value="camera$(var camera_id)" />
+
+    <!-- Create container in which all nodes are loaded -->
+    <let name="container_name" value="$(var camera_name)_container" />
+    <node pkg="rclcpp_components" exec="component_container_mt" name="$(var container_name)" namespace="/"/>
+
+    <!-- sensing -->
+    <group>
+      <push-ros-namespace namespace="sensing/camera/$(var camera_name)" />
       <include file="$(find-pkg-share edge_auto_jetson_launch)/launch/v4l2_camera.launch.xml">
-        <arg name="camera_frame_id" value="$(var camera_name)" />
+        <arg name="container_name" value="$(var container_name)" />
+        <arg name="camera_frame_id" value="$(var camera_name)/camera_optical_link" />
         <arg name="v4l2_camera_param_path" value="$(find-pkg-share individual_params)/config/$(var vehicle_id)/$(var camera_name)/v4l2_camera.param.yaml" />
-        <arg name="camera_info_url" value="$(find-pkg-share individual_params)/config/$(var vehicle_id)/$(var camera_name)/camera_info.yaml" />
+	      <arg name="camera_info_url" value="file://$(find-pkg-share individual_params)/config/$(var vehicle_id)/$(var camera_name)/camera_info.yaml" />
         <arg name="publish_rate" value="10.0" />
       </include>
     </group>
-  </group>
+
+    <!-- perception -->
+    <group>
+      <push-ros-namespace namespace="perception/object_recognition/detection" />
+      <include file="$(find-pkg-share edge_auto_jetson_launch)/launch/tensorrt_yolox.launch.xml">
+        <arg name="container_name" value="$(var container_name)" />
+        <arg name="input/image" value="/sensing/camera/$(var camera_name)/image_raw" />
+        <arg name="output/objects" value="rois$(var camera_id)" />
+      </include>
+
+      <include file="$(find-pkg-share edge_auto_jetson_launch)/launch/bytetrack.launch.xml">
+        <arg name="container_name" value="$(var container_name)" />
+        <arg name="input/objects" value="rois$(var camera_id)" />
+        <arg name="input/image" value="/sensing/camera/$(var camera_name)/image_raw" />
+        <arg name="input/image/is_raw" value="True" />
+        <arg name="output/objects" value="tracked/rois$(var camera_id)" />
+      </include>
+    </group>
+  </group>  <!-- camera1  -->
+
 </launch>
