@@ -1,5 +1,7 @@
 <launch>
   <arg name="vehicle_id" />
+  <arg name="live_sensor" default="True"/>
+  <arg name="perception" default="True"/>
 
   <!-- camera0 -->
   <group>
@@ -11,7 +13,7 @@
     <node pkg="rclcpp_components" exec="component_container_mt" name="$(var container_name)" namespace="/"/>
 
     <!-- sensing -->
-    <group>
+    <group if="$(var live_sensor)">
       <push-ros-namespace namespace="sensing/camera/$(var camera_name)" />
       <include file="$(find-pkg-share edge_auto_jetson_launch)/launch/v4l2_camera.launch.xml">
         <arg name="container_name" value="$(var container_name)" />
@@ -26,9 +28,17 @@
         <param from="$(find-pkg-share individual_params)/config/$(var vehicle_id)/$(var camera_name)/trigger.param.yaml"/>
       </node>
     </group>
+    <group unless="$(var live_sensor)">
+      <push-ros-namespace namespace="sensing/camera/$(var camera_name)" />
+      <include file="$(find-pkg-share edge_auto_jetson_launch)/launch/image_transport_decompressor.launch.xml">
+        <arg name="container_name" value="$(var container_name)" />
+        <arg name="input/compressed_image" value="image_raw/compressed" />
+        <arg name="output/raw_image" value="image_raw" />
+      </include>
+    </group>
 
     <!-- perception -->
-    <group>
+    <group if="$(var perception)">
       <push-ros-namespace namespace="perception/object_recognition/detection" />
       <include file="$(find-pkg-share edge_auto_jetson_launch)/launch/tensorrt_yolox.launch.xml">
         <arg name="container_name" value="$(var container_name)" />
@@ -56,7 +66,7 @@
     <node pkg="rclcpp_components" exec="component_container_mt" name="$(var container_name)" namespace="/"/>
 
     <!-- sensing -->
-    <group>
+    <group if="$(var live_sensor)">
       <push-ros-namespace namespace="sensing/camera/$(var camera_name)" />
       <include file="$(find-pkg-share edge_auto_jetson_launch)/launch/v4l2_camera.launch.xml">
         <arg name="container_name" value="$(var container_name)" />
@@ -71,9 +81,17 @@
         <param from="$(find-pkg-share individual_params)/config/$(var vehicle_id)/$(var camera_name)/trigger.param.yaml"/>
       </node>
     </group>
+    <group unless="$(var live_sensor)">
+      <push-ros-namespace namespace="sensing/camera/$(var camera_name)" />
+      <include file="$(find-pkg-share edge_auto_jetson_launch)/launch/image_transport_decompressor.launch.xml">
+        <arg name="container_name" value="$(var container_name)" />
+        <arg name="input/compressed_image" value="image_raw/compressed" />
+        <arg name="output/raw_image" value="image_raw" />
+      </include>
+    </group>
 
     <!-- perception -->
-    <group>
+    <group if="$(var perception)">
       <push-ros-namespace namespace="perception/object_recognition/detection" />
       <include file="$(find-pkg-share edge_auto_jetson_launch)/launch/tensorrt_yolox.launch.xml">
         <arg name="container_name" value="$(var container_name)" />
