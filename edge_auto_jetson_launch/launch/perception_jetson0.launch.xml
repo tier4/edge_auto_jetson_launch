@@ -43,6 +43,13 @@
         <arg name="input/image/is_raw" value="True" />
         <arg name="output/objects" value="/perception/object_recognition/detection/rois$(var camera_id)" />
       </include>
+
+      <let name="tensorrt_lightnet_is_installed" value="$(eval 'not &quot;$(find-pkg-share tensorrt_lightnet)&quot;')" />
+      <include file="$(find-pkg-share tensorrt_lightnet)/launch/tensorrt_lightnet.launch.xml" if="$(var tensorrt_lightnet_is_installed)">
+        <arg name="container_name" value="$(var container_name)" />
+        <arg name="input/image" value="/sensing/camera/$(var camera_name)/image_raw" />
+        <arg name="output/objects" value="/perception/object_recognition/detection/rois$(var camera_id)" />
+      </include>
     </group>
   </group>  <!-- camera0  -->
 
