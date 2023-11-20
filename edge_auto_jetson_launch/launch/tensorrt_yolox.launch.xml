@@ -4,9 +4,9 @@
   <!-- output topic name to be published (bbox) -->
   <arg name="output/objects" default="/perception/object_recognition/detection/rois0" />
   <!-- path to the YOLOX model to be loaded -->
-  <arg name="model_path" default="$(find-pkg-share tensorrt_yolox)/data/yolox-tiny.onnx" />
+  <arg name="model_path" default="/opt/autoware/data/tensorrt_yolox/yolox-tiny.onnx" />
   <!-- path to the label file to explain category ID and string -->
-  <arg name="label_path" default="$(find-pkg-share tensorrt_yolox)/data/label.txt" />
+  <arg name="label_path" default="/opt/autoware/data/tensorrt_yolox/label.txt" />
   <!-- container naem that this ROS node to be loaded -->
   <arg name="container_name" default="" />
   <!-- flag to use ROS2 intra process -->
