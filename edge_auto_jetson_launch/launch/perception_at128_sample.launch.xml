@@ -1,0 +1,76 @@
+<launch>
+  <!-- arguments -->
+  <arg name="vehicle_id" default="$(env VEHICLE_ID default)"/>
+  <arg name="lidar_correction_file" default="$(find-pkg-share individual_params)/config/$(var vehicle_id)/lidar/at128_default.dat"/>
+  <arg name="lidar_camera0_tf_file" default="$(find-pkg-share individual_params)/config/$(var vehicle_id)/at128_to_camera0.json"/>
+  <arg name="lidar_camera1_tf_file" default="$(find-pkg-share individual_params)/config/$(var vehicle_id)/at128_to_camera1.json"/>
+  <arg name="live_sensor" default="True"/>
+  <arg name="sensor_height" default="1.0"/>
+
+  <!-- vehicle_info -->
+  <include file="$(find-pkg-share vehicle_info_util)/launch/vehicle_info.launch.py">
+    <arg name="vehicle_info_param_file" value="$(find-pkg-share individual_params)/config/$(var vehicle_id)/vehicle_info.param.yaml"/>
+  </include>
+
+  <!-- base_link generation -->
+  <node pkg="tf2_ros" exec="static_transform_publisher" name="base_link_broadcaster" output="screen" args="--x 0.0 --y 0.0 --z $(var sensor_height) --qx 0.0 --qy 0.0 --qz 0.0 --qw 1.0 --frame-id base_link --child-frame-id lidar" />
+
+  <!-- calibration -->
+  <include file="$(find-pkg-share edge_auto_launch)/launch/component/lidar_camera_tf_publisher.launch.py">
+    <arg name="tf_file_path" value="$(var lidar_camera0_tf_file)"/>
+  </include>
+  <include file="$(find-pkg-share edge_auto_launch)/launch/component/lidar_camera_tf_publisher.launch.py">
+    <arg name="tf_file_path" value="$(var lidar_camera1_tf_file)"/>
+  </include>
+
+  <!-- driver -->
+  <group>
+    <push-ros-namespace namespace="/sensing/lidar/at128"/>
+    <include file="$(find-pkg-share edge_auto_launch)/launch/component/hesai_at128.launch.xml">
+      <arg name="frame_id" value="lidar"/>
+      <arg name="live_sensor" value="$(var live_sensor)"/>
+      <arg name="correction_file" value="$(var lidar_correction_file)"/>
+    </include>
+  </group>
+
+  <!-- perception -->
+  <group>
+    <push-ros-namespace namespace="/perception/object_recognition/detection"/>
+    <group>
+      <push-ros-namespace namespace="centerpoint"/>
+      <include file="$(find-pkg-share edge_auto_launch)/launch/component/crop_box_filter.launch.xml">
+        <arg name="input/pointcloud" value="/sensing/lidar/at128/pointcloud_raw"/>
+        <arg name="output/pointcloud" value="cropped/pointcloud"/>
+        <arg name="frame_id" value="base_link"/>
+        <arg name="max_z" value="2.0"/>
+      </include>
+      <include file="$(find-pkg-share edge_auto_launch)/launch/component/voxel_downsample_filter.launch.xml">
+        <arg name="input/pointcloud" value="cropped/pointcloud"/>
+        <arg name="output/pointcloud" value="downsampled/pointcloud"/>
+        <arg name="voxel_size_x" value="0.3"/>
+        <arg name="voxel_size_y" value="0.3"/>
+        <arg name="voxel_size_z" value="0.1"/>
+      </include>
+      <include file="$(find-pkg-share edge_auto_launch)/launch/component/lidar_centerpoint.launch.xml">
+        <arg name="input/pointcloud" value="downsampled/pointcloud"/>
+        <arg name="output/objects" value="objects"/>
+        <arg name="model_name" value="centerpoint"/>
+        <arg name="score_threshold" value="0.075"/>
+        <arg name="densification_num_past_frames" value="0"/>
+      </include>
+    </group>
+    <group>
+      <push-ros-namespace namespace="image_projection_based_fusion"/>
+      <include file="$(find-pkg-share edge_auto_launch)/launch/component/roi_detected_objects_fusion.launch.xml">
+        <arg name="input/objects" value="/perception/object_recognition/detection/centerpoint/objects"/>
+        <arg name="output/objects" value="/perception/object_recognition/detection/objects"/>
+        <arg name="model_name" value="centerpoint"/>
+        <arg name="input/rois_number" value="2"/>
+        <arg name="input/rois0" value="/perception/object_recognition/detection/rois0"/>
+        <arg name="input/camera_info0" value="/sensing/camera/camera0/camera_info"/>
+        <arg name="input/rois1" value="/perception/object_recognition/detection/rois1"/>
+        <arg name="input/camera_info1" value="/sensing/camera/camera1/camera_info"/>
+      </include>
+    </group>
+  </group>
+</launch>

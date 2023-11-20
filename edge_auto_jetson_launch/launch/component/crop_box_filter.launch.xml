@@ -1,0 +1,49 @@
+<launch>
+  <arg name="input/pointcloud" default="input/pointcloud"/>
+  <arg name="output/pointcloud" default="output/pointcloud"/>
+  <arg name="frame_id" default="lidar"/>
+
+  <arg name="min_x" default="-100.0"/>
+  <arg name="min_y" default="-100.0"/>
+  <arg name="min_z" default="-100.0"/>
+  <arg name="max_x" default="100.0"/>
+  <arg name="max_y" default="100.0"/>
+  <arg name="max_z" default="100.0"/>
+  <arg name="negative" default="false" description="If true, points outside of the box will be published"/>
+  <arg name="container_name" default=""/>
+
+  <let name="empty_container_is_specified" value="$(eval 'not &quot;$(var container_name)&quot;')" />
+  <group if="$(var empty_container_is_specified)">
+    <node pkg="pointcloud_preprocessor" exec="crop_box_filter_node" name="crop_box_filter">
+      <remap from="input" to="$(var input/pointcloud)"/>
+      <remap from="output" to="$(var output/pointcloud)"/>
+      <param name="input_frame" value="$(var frame_id)"/>
+      <param name="output_frame" value="$(var frame_id)"/>
+      <param name="min_x" value="$(var min_x)"/>
+      <param name="min_y" value="$(var min_y)"/>
+      <param name="min_z" value="$(var min_z)"/>
+      <param name="max_x" value="$(var max_x)"/>
+      <param name="max_y" value="$(var max_y)"/>
+      <param name="max_z" value="$(var max_z)"/>
+      <param name="negative" value="$(var negative)"/>
+    </node>
+  </group>
+
+  <group unless="$(var empty_container_is_specified)">
+    <load_composable_node target="$(var container_name)">
+      <composable_node pkg="pointcloud_preprocessor" plugin="pointcloud_preprocessor::CropBoxFilterComponent" name="crop_box_filter">
+        <param name="input_frame" value="$(var frame_id)"/>
+        <param name="output_frame" value="$(var frame_id)"/>
+        <param name="min_x" value="$(var min_x)"/>
+        <param name="min_y" value="$(var min_y)"/>
+        <param name="min_z" value="$(var min_z)"/>
+        <param name="max_x" value="$(var max_x)"/>
+        <param name="max_y" value="$(var max_y)"/>
+        <param name="max_z" value="$(var max_z)"/>
+        <param name="negative" value="$(var negative)"/>
+        <extra_arg name="use_intra_process_comms" value="$(var use_intra_process)"/>
+      </composable_node>
+    </load_composable_node>
+  </group>
+
+</launch>
