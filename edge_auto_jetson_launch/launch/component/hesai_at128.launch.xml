@@ -1,0 +1,75 @@
+<launch>
+  <arg name="live_sensor" default="True"/>
+  <arg name="sensor_model" default="PandarAT128"/>
+  <arg name="return_mode" default="Strongest"/>
+  <arg name="frame_id" default="lidar"/>
+  <arg name="scan_phase" default="0.0"/>
+  <arg name="namespace" default=""/>
+  <arg name="calibration_file" default="$(find-pkg-share nebula_decoders)/calibration/hesai/$(var sensor_model).csv"/>
+  <arg name="correction_file" default="$(find-pkg-share nebula_decoders)/calibration/hesai/$(var sensor_model).dat"/>
+  <arg name="sensor_ip" default="192.168.1.201"/>
+  <arg name="host_ip" default="192.168.1.100"/>
+  <arg name="data_port" default="2368"/>
+  <arg name="gnss_port" default="10110"/>
+  <arg name="packet_mtu_size" default="1500"/>
+  <arg name="rotation_speed" default="200"/>
+  <arg name="cloud_min_angle" default="0"/>
+  <arg name="cloud_max_angle" default="360" />
+  <arg name="dual_return_distance_threshold" default="0.1"/>
+  <arg name="diag_span" default="1000"/>
+  <arg name="setup_sensor" default="True"/>
+
+  <group>
+    <node_container pkg="rclcpp_components" exec="component_container" name="nebula_at128_node" namespace="/">
+      <composable_node pkg="nebula_ros" plugin="HesaiDriverRosWrapper" name="hesai_driver_roswrapper_node" namespace="$(var namespace)">
+        <param name="sensor_model" value="$(var sensor_model)"/>
+        <param name="return_mode" value="$(var return_mode)"/>
+        <param name="frame_id" value="$(var frame_id)"/>
+        <param name="scan_phase" value="$(var scan_phase)"/>
+        <param name="calibration_file" value="$(var calibration_file)"/>
+        <param name="correction_file" value="$(var correction_file)"/>
+        <remap from="pandar_points" to="pointcloud_raw"/>
+        <extra_arg name="use_intra_process_comms" value="true"/>
+      </composable_node>
+    </node_container>
+
+    <load_composable_node target="nebula_at128_node" if="$(var live_sensor)">
+      <composable_node pkg="nebula_ros" plugin="HesaiHwInterfaceRosWrapper" name="hesai_hw_interface_ros_wrapper_node" namespace="$(var namespace)">
+        <param name="sensor_model" value="$(var sensor_model)"/>
+        <param name="return_mode" value="$(var return_mode)"/>
+        <param name="frame_id" value="$(var frame_id)"/>
+        <param name="scan_phase" value="$(var scan_phase)"/>
+        <param name="sensor_ip" value="$(var sensor_ip)"/>
+        <param name="frame_id" value="$(var frame_id)"/>
+        <param name="host_ip" value="$(var host_ip)"/>
+        <param name="data_port" value="$(var data_port)"/>
+        <param name="gnss_port" value="$(var gnss_port)"/>
+        <param name="packet_mtu_size" value="$(var packet_mtu_size)"/>
+        <param name="rotation_speed" value="$(var rotation_speed)"/>
+        <param name="cloud_min_angle" value="$(var cloud_min_angle)"/>
+        <param name="cloud_max_angle" value="$(var cloud_max_angle)"/>
+        <param name="dual_return_distance_threshold" value="$(var dual_return_distance_threshold)"/>
+        <param name="setup_sensor" value="$(var setup_sensor)"/>
+        <extra_arg name="use_intra_process_comms" value="true"/>
+      </composable_node>
+      <composable_node pkg="nebula_ros" plugin="HesaiHwMonitorRosWrapper" name="hesai_hw_monitor_ros_wrapper_node" namespace="$(var namespace)">
+        <param name="sensor_model" value="$(var sensor_model)"/>
+        <param name="return_mode" value="$(var return_mode)"/>
+        <param name="frame_id" value="$(var frame_id)"/>
+        <param name="scan_phase" value="$(var scan_phase)"/>
+        <param name="sensor_ip" value="$(var sensor_ip)"/>
+        <param name="frame_id" value="$(var frame_id)"/>
+        <param name="host_ip" value="$(var host_ip)"/>
+        <param name="data_port" value="$(var data_port)"/>
+        <param name="gnss_port" value="$(var gnss_port)"/>
+        <param name="packet_mtu_size" value="$(var packet_mtu_size)"/>
+        <param name="rotation_speed" value="$(var rotation_speed)"/>
+        <param name="cloud_min_angle" value="$(var cloud_min_angle)"/>
+        <param name="cloud_max_angle" value="$(var cloud_max_angle)"/>
+        <param name="diag_span" value="$(var diag_span)"/>
+        <param name="dual_return_distance_threshold" value="$(var dual_return_distance_threshold)"/>
+        <extra_arg name="use_intra_process_comms" value="true"/>
+      </composable_node>
+    </load_composable_node>
+  </group>
+</launch>
