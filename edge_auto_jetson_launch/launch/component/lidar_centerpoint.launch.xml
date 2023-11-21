@@ -3,8 +3,8 @@
   <arg name="output/objects" default="output/objects"/>
   <arg name="model_name" default="centerpoint_tiny" description="options: `centerpoint` or `centerpoint_tiny`"/>
   <arg name="model_path" default="/opt/autoware/data/lidar_centerpoint/"/>
-  <arg name="model_param_path" default="$(find-pkg-share edge_auto_launch)/config/$(var model_name).param.yaml"/>
-  <arg name="class_remapper_param_path" default="$(find-pkg-share edge_auto_launch)/config/detection_class_remapper.param.yaml"/>
+  <arg name="model_param_path" default="$(find-pkg-share edge_auto_jetson_launch)/config/$(var model_name).param.yaml"/>
+  <arg name="class_remapper_param_path" default="$(find-pkg-share edge_auto_jetson_launch)/config/detection_class_remapper.param.yaml"/>
   <arg name="score_threshold" default="0.35"/>
   <arg name="densification_world_frame_id" default="map"/>
   <arg name="densification_num_past_frames" default="1"/>
