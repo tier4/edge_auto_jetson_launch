@@ -1,0 +1,36 @@
+<launch>
+  <arg name="input/rois_number" default="2"/>
+  <arg name="input/rois0" default="input/rois0"/>
+  <arg name="input/camera_info0" default="input/camera_info0"/>
+  <arg name="input/rois1" default="input/rois1"/>
+  <arg name="input/camera_info1" default="input/camera_info1"/>
+
+  <arg name="input/objects" default="input/objects"/>
+  <arg name="output/objects" default="output/objects"/>
+  <arg name="sync_param_path" default="$(find-pkg-share edge_auto_jetson_launch)/config/roi_sync.param.yaml"/>
+  <arg name="can_assign_matrix_param_path" default="$(find-pkg-share edge_auto_jetson_launch)/config/can_assign_matrix.yaml"/>
+
+  <!-- for eval variable-->
+  <arg name="input_rois_number" default="$(var input/rois_number)"/>
+
+  <group>
+    <set_remap if="$(eval &quot;'$(var input_rois_number)' >= '1' &quot;)" from="input/rois0" to="$(var input/rois0)"/>
+    <set_remap if="$(eval &quot;'$(var input_rois_number)' >= '1' &quot;)" from="input/camera_info0" to="$(var input/camera_info0)"/>
+    <set_remap if="$(eval &quot;'$(var input_rois_number)' >= '2' &quot;)" from="input/rois1" to="$(var input/rois1)"/>
+    <set_remap if="$(eval &quot;'$(var input_rois_number)' >= '2' &quot;)" from="input/camera_info1" to="$(var input/camera_info1)"/>
+
+    <node pkg="image_projection_based_fusion" exec="roi_detected_object_fusion_node" name="roi_detected_object_fusion" output="screen">
+      <param name="rois_number" value="$(var input/rois_number)"/>
+      <param from="$(var sync_param_path)"/>
+      <remap from="input" to="$(var input/objects)"/>
+      <remap from="output" to="$(var output/objects)"/>
+      <param name="passthrough_lower_bound_probability_thresholds" value="[0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35]"/>
+      <param name="use_roi_probability" value="false"/>
+      <param name="roi_probability_threshold" value="0.5"/>
+      <param name="min_iou_threshold" value="0.3"/>
+      <param name="debug_mode" value="false"/>
+      <param name="trust_distances" value="[100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0]"/>
+      <param from="$(var can_assign_matrix_param_path)"/>
+    </node>
+  </group>
+</launch>

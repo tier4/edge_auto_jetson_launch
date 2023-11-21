@@ -19,6 +19,11 @@
   <exec_depend>bytetrack</exec_depend>
   <exec_depend>intrinsic_camera_calibrator</exec_depend>
   <exec_depend>image_transport_decompressor</exec_depend>
+  <exec_depend>image_projection_based_fusion</exec_depend>
+  <exec_depend>vehicle_info_util</exec_depend>
+  <exec_depend>lidar_centerpoint</exec_depend>
+  <exec_depend>nebula_sensor_driver</exec_depend>
+
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
