@@ -5,23 +5,22 @@
   <arg name="object_detection_data_path" default="/opt/autoware" description="object detection data path"/>
 
   <group>
-    <let name="rectify" value="true" if="$(eval '&quot;$(env SENSOR_MODEL)&quot;==&quot;aip_xx1&quot;')" />
-    <let name="rectify" value="false" if="$(eval '&quot;$(env SENSOR_MODEL)&quot;==&quot;aip_x2&quot; or &quot;$(env SENSOR_MODEL)&quot;==&quot;aip_xx1_gen1.5&quot;')" />
+    <let name="rectify" value="false" />
     <let name="camera0_id" value="$(eval &quot;$(env JETSON_ID 0) * 2 &quot;)" />
     <let name="camera1_id" value="$(eval &quot;$(env JETSON_ID 0) * 2 + 1 &quot;)" />
     <let name="camera2_id" value="$(eval &quot;$(env JETSON_ID 0) * 2 + 2 &quot;)" />
     <let name="camera3_id" value="$(eval &quot;$(env JETSON_ID 0) * 2 + 3 &quot;)" />
     <let name="image_topic" value="image_raw" if="$(var rectify)" />
     <let name="image_topic" value="image_rect_color" unless="$(var rectify)" />
-    <let name="v4l2_0_param_path" value="$(find-pkg-share individual_params)/config/$(env VEHICLE_ID default)/$(env SENSOR_MODEL aip_x2)/tier4-c2/v4l2_$(var camera0_id).param.yaml" />
-    <let name="v4l2_1_param_path" value="$(find-pkg-share individual_params)/config/$(env VEHICLE_ID default)/$(env SENSOR_MODEL aip_x2)/tier4-c2/v4l2_$(var camera1_id).param.yaml" />
-    <let name="v4l2_2_param_path" value="$(find-pkg-share individual_params)/config/$(env VEHICLE_ID default)/$(env SENSOR_MODEL aip_x2)/tier4-c2/v4l2_$(var camera2_id).param.yaml" />
-    <let name="v4l2_3_param_path" value="$(find-pkg-share individual_params)/config/$(env VEHICLE_ID default)/$(env SENSOR_MODEL aip_x2)/tier4-c2/v4l2_$(var camera3_id).param.yaml" />
-    <let name="camera0_info_url" value="package://individual_params/config/$(env VEHICLE_ID default)/$(env SENSOR_MODEL aip_x2)/tier4-c2/camera$(var camera0_id)_info.yaml" />
-    <let name="camera1_info_url" value="package://individual_params/config/$(env VEHICLE_ID default)/$(env SENSOR_MODEL aip_x2)/tier4-c2/camera$(var camera1_id)_info.yaml" />
-    <let name="camera2_info_url" value="package://individual_params/config/$(env VEHICLE_ID default)/$(env SENSOR_MODEL aip_x2)/tier4-c2/camera$(var camera2_id)_info.yaml" />
-    <let name="camera3_info_url" value="package://individual_params/config/$(env VEHICLE_ID default)/$(env SENSOR_MODEL aip_x2)/tier4-c2/camera$(var camera3_id)_info.yaml" />
-    <let name="camera0_trigger_param_path" value="$(find-pkg-share individual_params)/config/$(env VEHICLE_ID default)/$(env SENSOR_MODEL aip_x2)/tier4-c2/camera$(var camera0_id)_trigger.param.yaml" />
+    <let name="v4l2_0_param_path" value="$(find-pkg-share individual_params)/config/$(env VEHICLE_ID default)/camera0/v4l2_camera.param.yaml" />
+    <let name="v4l2_1_param_path" value="$(find-pkg-share individual_params)/config/$(env VEHICLE_ID default)/camera1/v4l2_camera.param.yaml" />
+    <let name="v4l2_2_param_path" value="$(find-pkg-share individual_params)/config/$(env VEHICLE_ID default)/camera2/v4l2_camera.param.yaml" />
+    <let name="v4l2_3_param_path" value="$(find-pkg-share individual_params)/config/$(env VEHICLE_ID default)/camera3/v4l2_camera.param.yaml" />
+    <let name="camera0_info_url" value="package://individual_params/config/$(env VEHICLE_ID default)/camera0/camera_info.yaml" />
+    <let name="camera1_info_url" value="package://individual_params/config/$(env VEHICLE_ID default)/camera1/camera_info.yaml" />
+    <let name="camera2_info_url" value="package://individual_params/config/$(env VEHICLE_ID default)/camera2/camera_info.yaml" />
+    <let name="camera3_info_url" value="package://individual_params/config/$(env VEHICLE_ID default)/camera3/camera_info.yaml" />
+    <let name="camera0_trigger_param_path" value="$(find-pkg-share individual_params)/config/$(env VEHICLE_ID default)/camera0/trigger.param.yaml" />
 
     <include file="$(find-pkg-share jetson_or_launch)/launch/object_recognition_container.launch.py">
       <arg name="container" value="object_recognition_container$(var camera0_id)" />
@@ -70,7 +69,7 @@
 
     <group unless="$(var disable_camera_driver)">
 
-      <group if="$(eval '&quot;$(env SENSOR_MODEL)&quot;==&quot;aip_x2&quot; or &quot;$(env SENSOR_MODEL)&quot;==&quot;aip_xx1_gen1.5&quot;')">
+      <group>
         <include file="$(find-pkg-share v4l2_camera)/launch/v4l2_camera.launch.py">
           <arg name="container" value="object_recognition_container$(var camera0_id)" />
           <arg name="image_topic" value="$(var image_topic)" />
