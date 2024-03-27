@@ -1,0 +1,174 @@
+<launch>
+  <arg name="use_sensor_data_qos" default="true" description="flag to switch data QoS" />
+  <arg name="disable_camera_driver" default="false"
+       description="If true, this launcher runs image_transport_decompressor instead of camera driver" />
+  <arg name="object_detection_data_path" default="/opt/autoware" description="object detection data path"/>
+
+  <group>
+    <let name="rectify" value="true" if="$(eval '&quot;$(env SENSOR_MODEL)&quot;==&quot;aip_xx1&quot;')" />
+    <let name="rectify" value="false" if="$(eval '&quot;$(env SENSOR_MODEL)&quot;==&quot;aip_x2&quot; or &quot;$(env SENSOR_MODEL)&quot;==&quot;aip_xx1_gen1.5&quot;')" />
+    <let name="camera0_id" value="$(eval &quot;$(env JETSON_ID 0) * 2 &quot;)" />
+    <let name="camera1_id" value="$(eval &quot;$(env JETSON_ID 0) * 2 + 1 &quot;)" />
+    <let name="camera2_id" value="$(eval &quot;$(env JETSON_ID 0) * 2 + 2 &quot;)" />
+    <let name="camera3_id" value="$(eval &quot;$(env JETSON_ID 0) * 2 + 3 &quot;)" />
+    <let name="image_topic" value="image_raw" if="$(var rectify)" />
+    <let name="image_topic" value="image_rect_color" unless="$(var rectify)" />
+    <let name="v4l2_0_param_path" value="$(find-pkg-share individual_params)/config/$(env VEHICLE_ID default)/$(env SENSOR_MODEL aip_x2)/tier4-c2/v4l2_$(var camera0_id).param.yaml" />
+    <let name="v4l2_1_param_path" value="$(find-pkg-share individual_params)/config/$(env VEHICLE_ID default)/$(env SENSOR_MODEL aip_x2)/tier4-c2/v4l2_$(var camera1_id).param.yaml" />
+    <let name="v4l2_2_param_path" value="$(find-pkg-share individual_params)/config/$(env VEHICLE_ID default)/$(env SENSOR_MODEL aip_x2)/tier4-c2/v4l2_$(var camera2_id).param.yaml" />
+    <let name="v4l2_3_param_path" value="$(find-pkg-share individual_params)/config/$(env VEHICLE_ID default)/$(env SENSOR_MODEL aip_x2)/tier4-c2/v4l2_$(var camera3_id).param.yaml" />
+    <let name="camera0_info_url" value="package://individual_params/config/$(env VEHICLE_ID default)/$(env SENSOR_MODEL aip_x2)/tier4-c2/camera$(var camera0_id)_info.yaml" />
+    <let name="camera1_info_url" value="package://individual_params/config/$(env VEHICLE_ID default)/$(env SENSOR_MODEL aip_x2)/tier4-c2/camera$(var camera1_id)_info.yaml" />
+    <let name="camera2_info_url" value="package://individual_params/config/$(env VEHICLE_ID default)/$(env SENSOR_MODEL aip_x2)/tier4-c2/camera$(var camera2_id)_info.yaml" />
+    <let name="camera3_info_url" value="package://individual_params/config/$(env VEHICLE_ID default)/$(env SENSOR_MODEL aip_x2)/tier4-c2/camera$(var camera3_id)_info.yaml" />
+    <let name="camera0_trigger_param_path" value="$(find-pkg-share individual_params)/config/$(env VEHICLE_ID default)/$(env SENSOR_MODEL aip_x2)/tier4-c2/camera$(var camera0_id)_trigger.param.yaml" />
+
+    <include file="$(find-pkg-share jetson_or_launch)/launch/object_recognition_container.launch.py">
+      <arg name="container" value="object_recognition_container$(var camera0_id)" />
+    </include>
+
+    <include file="$(find-pkg-share jetson_or_launch)/launch/object_recognition_container.launch.py">
+      <arg name="container" value="object_recognition_container$(var camera1_id)" />
+    </include>
+
+    <include file="$(find-pkg-share jetson_or_launch)/launch/object_recognition_container.launch.py">
+      <arg name="container" value="object_recognition_container$(var camera2_id)" />
+    </include>
+
+    <include file="$(find-pkg-share jetson_or_launch)/launch/object_recognition_container.launch.py">
+      <arg name="container" value="object_recognition_container$(var camera3_id)" />
+    </include>
+
+    <group if="$(var rectify)">
+      <let name="use_system_default_qos" value="false" if="$(var use_sensor_data_qos)"/>
+      <let name="use_system_default_qos" value="true" unless="$(var use_sensor_data_qos)"/>
+
+      <include file="$(find-pkg-share jetson_or_launch)/launch/image_rectify.launch.py">
+        <arg name="container" value="object_recognition_container$(var camera0_id)" />
+        <arg name="camera_id" value="$(var camera0_id)" />
+        <arg name="use_system_default_qos" value="$(var use_system_default_qos)" />
+      </include>
+
+      <include file="$(find-pkg-share jetson_or_launch)/launch/image_rectify.launch.py">
+        <arg name="container" value="object_recognition_container$(var camera1_id)" />
+        <arg name="camera_id" value="$(var camera1_id)" />
+        <arg name="use_system_default_qos" value="$(var use_system_default_qos)" />
+      </include>
+
+      <include file="$(find-pkg-share jetson_or_launch)/launch/image_rectify.launch.py">
+        <arg name="container" value="object_recognition_container$(var camera2_id)" />
+        <arg name="camera_id" value="$(var camera2_id)" />
+        <arg name="use_system_default_qos" value="$(var use_system_default_qos)" />
+      </include>
+
+      <include file="$(find-pkg-share jetson_or_launch)/launch/image_rectify.launch.py">
+        <arg name="container" value="object_recognition_container$(var camera3_id)" />
+        <arg name="camera_id" value="$(var camera3_id)" />
+        <arg name="use_system_default_qos" value="$(var use_system_default_qos)" />
+      </include>
+    </group>
+
+    <group unless="$(var disable_camera_driver)">
+
+      <group if="$(eval '&quot;$(env SENSOR_MODEL)&quot;==&quot;aip_x2&quot; or &quot;$(env SENSOR_MODEL)&quot;==&quot;aip_xx1_gen1.5&quot;')">
+        <include file="$(find-pkg-share v4l2_camera)/launch/v4l2_camera.launch.py">
+          <arg name="container" value="object_recognition_container$(var camera0_id)" />
+          <arg name="image_topic" value="$(var image_topic)" />
+          <arg name="camera_name" value="camera$(var camera0_id)" />
+          <arg name="v4l2_camera_param_path" value="$(var v4l2_0_param_path)" />
+          <arg name="camera_info_url" value="$(var camera0_info_url)" />
+          <arg name="use_sensor_data_qos" value="$(var use_sensor_data_qos)" />
+        </include>
+        <node pkg="sensor_trigger" exec="sensor_trigger_exe" name="camera$(var camera0_id)_trigger" namespace="/sensing/camera/camera$(var camera0_id)">
+          <param from="$(var camera0_trigger_param_path)" />
+        </node>
+
+        <include file="$(find-pkg-share v4l2_camera)/launch/v4l2_camera.launch.py">
+          <arg name="container" value="object_recognition_container$(var camera1_id)" />
+          <arg name="image_topic" value="$(var image_topic)" />
+          <arg name="camera_name" value="camera$(var camera1_id)" />
+          <arg name="v4l2_camera_param_path" value="$(var v4l2_1_param_path)" />
+          <arg name="camera_info_url" value="$(var camera1_info_url)" />
+          <arg name="use_sensor_data_qos" value="$(var use_sensor_data_qos)" />
+        </include>
+
+        <include file="$(find-pkg-share v4l2_camera)/launch/v4l2_camera.launch.py">
+          <arg name="container" value="object_recognition_container$(var camera2_id)" />
+          <arg name="image_topic" value="$(var image_topic)" />
+          <arg name="camera_name" value="camera$(var camera2_id)" />
+          <arg name="v4l2_camera_param_path" value="$(var v4l2_2_param_path)" />
+          <arg name="camera_info_url" value="$(var camera2_info_url)" />
+          <arg name="use_sensor_data_qos" value="$(var use_sensor_data_qos)" />
+        </include>
+
+        <include file="$(find-pkg-share v4l2_camera)/launch/v4l2_camera.launch.py">
+          <arg name="container" value="object_recognition_container$(var camera3_id)" />
+          <arg name="image_topic" value="$(var image_topic)" />
+          <arg name="camera_name" value="camera$(var camera3_id)" />
+          <arg name="v4l2_camera_param_path" value="$(var v4l2_3_param_path)" />
+          <arg name="camera_info_url" value="$(var camera3_info_url)" />
+          <arg name="use_sensor_data_qos" value="$(var use_sensor_data_qos)" />
+        </include>
+      </group>
+    </group>
+
+    <include file="$(find-pkg-share jetson_or_launch)/launch/object_recognition.launch.py">
+      <arg name="container" value="object_recognition_container$(var camera0_id)" />
+      <arg name="camera_id" value="$(var camera0_id)" />
+      <arg name="data_path" value="$(var object_detection_data_path)"/>
+    </include>
+
+    <include file="$(find-pkg-share jetson_or_launch)/launch/object_recognition.launch.py">
+      <arg name="container" value="object_recognition_container$(var camera1_id)" />
+      <arg name="camera_id" value="$(var camera1_id)" />
+      <arg name="data_path" value="$(var object_detection_data_path)"/>
+    </include>
+
+    <include file="$(find-pkg-share jetson_or_launch)/launch/object_recognition.launch.py">
+      <arg name="container" value="object_recognition_container$(var camera2_id)" />
+      <arg name="camera_id" value="$(var camera2_id)" />
+      <arg name="data_path" value="$(var object_detection_data_path)"/>
+    </include>
+
+    <include file="$(find-pkg-share jetson_or_launch)/launch/object_recognition.launch.py">
+      <arg name="container" value="object_recognition_container$(var camera3_id)" />
+      <arg name="camera_id" value="$(var camera3_id)" />
+      <arg name="data_path" value="$(var object_detection_data_path)"/>
+    </include>
+
+    <group if="$(var disable_camera_driver)">
+      <load_composable_node target="object_recognition_container$(var camera0_id)">
+        <composable_node pkg="image_transport_decompressor" plugin="image_preprocessor::ImageTransportDecompressor"
+                         namespace="/sensing/camera" name="image_transport_decompressor_node$(var camera0_id)">
+          <remap from="~/input/compressed_image" to="camera$(var camera0_id)/image_rect_color/compressed"/>
+          <remap from="~/output/raw_image" to="camera$(var camera0_id)/image_rect_color"/>
+        </composable_node>
+      </load_composable_node>
+
+      <load_composable_node target="object_recognition_container$(var camera1_id)">
+        <composable_node pkg="image_transport_decompressor" plugin="image_preprocessor::ImageTransportDecompressor"
+                         namespace="/sensing/camera" name="image_transport_decompressor_node$(var camera1_id)">
+          <remap from="~/input/compressed_image" to="camera$(var camera1_id)/image_rect_color/compressed"/>
+          <remap from="~/output/raw_image" to="camera$(var camera1_id)/image_rect_color"/>
+        </composable_node>
+      </load_composable_node>
+
+      <load_composable_node target="object_recognition_container$(var camera2_id)">
+        <composable_node pkg="image_transport_decompressor" plugin="image_preprocessor::ImageTransportDecompressor"
+                         namespace="/sensing/camera" name="image_transport_decompressor_node$(var camera2_id)">
+          <remap from="~/input/compressed_image" to="camera$(var camera2_id)/image_rect_color/compressed"/>
+          <remap from="~/output/raw_image" to="camera$(var camera2_id)/image_rect_color"/>
+        </composable_node>
+      </load_composable_node>
+
+      <load_composable_node target="object_recognition_container$(var camera3_id)">
+        <composable_node pkg="image_transport_decompressor" plugin="image_preprocessor::ImageTransportDecompressor"
+                         namespace="/sensing/camera" name="image_transport_decompressor_node$(var camera3_id)">
+          <remap from="~/input/compressed_image" to="camera$(var camera3_id)/image_rect_color/compressed"/>
+          <remap from="~/output/raw_image" to="camera$(var camera3_id)/image_rect_color"/>
+        </composable_node>
+      </load_composable_node>
+    </group>
+
+  </group>
+</launch>
