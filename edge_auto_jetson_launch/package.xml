@@ -16,7 +16,7 @@
   <exec_depend>image_transport_plugins</exec_depend>
   <exec_depend>individual_params</exec_depend>
   <exec_depend>tensorrt_yolox</exec_depend>
-  <exec_depend>bytetrack</exec_depend>
+  <exec_depend>autoware_bytetrack</exec_depend>
   <exec_depend>intrinsic_camera_calibrator</exec_depend>
   <exec_depend>image_transport_decompressor</exec_depend>
 
