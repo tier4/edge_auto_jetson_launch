@@ -1,93 +1,19 @@
 <launch>
   <!-- image topic name to be subscribed -->
-  <arg name="input/image" default="image_raw" />
-  <!-- output topic name to be published (bbox) -->
-  <arg name="output/objects" default="/perception/object_recognition/detection/rois0" />
-  <!-- path to the YOLOX model to be loaded -->
-  <arg name="model_path" default="$(find-pkg-share tensorrt_yolox)/data/yolox-tiny.onnx" />
-  <!-- path to the label file to explain category ID and string -->
-  <arg name="label_path" default="$(find-pkg-share tensorrt_yolox)/data/label.txt" />
-  <!-- container naem that this ROS node to be loaded -->
-  <arg name="container_name" default="" />
-  <!-- flag to use ROS2 intra process -->
-  <arg name="use_intra_process" default="True" />
-
-  <!-- algorithm parameters -->
-  <arg name="score_threshold" default="0.35" />
-  <arg name="nms_threshold" default="0.7" />
-  <arg name="precision" default="fp32"
-       description="operation precision to be used on inference.Valid value is one of: [fp32, fp16, int8]" />
-  <arg name="calibration_algorithm"
-       default="MinMax"
-       description="Calibration algorithm to be used for quantization when precision==int8. Valid value is one of: [Entropy, (Legacy | Percentile), MinMax]" />
-  <arg name="dla_core_id" default="-1"
-       description="If positive ID value is specified, the node assign inference task to the DLA core" />
-  <arg name="quantize_first_layer" default="false"
-       description="If true, set the operating precision for the first (input) layer to be fp16. This option is valid only when precision==int8" />
-  <arg name="quantize_last_layer" default="false"
-       description="If true, set the operating precision for the last (output) layer to be fp16. This option is valid only when precision==int8" />
-  <arg name="profile_per_layer" default="false"
-       description="If true, profiler function will be enabled. Since the profile function may affect execution speed, it is recommended to set this flag true only for development purpose." />
-  <arg name="clip_value" default="0.0"
-       description="If positive value is specified, the value of each layer output will be clipped between [0.0, clip_value]. This option is valid only when precision==int8 and used to manually specify the dynamic range instead of using any calibration." />
-  <arg name="preprocess_on_gpu" default="true" description="If true, pre-processing is performed on GPU" />
-  <arg name="calibration_image_list_path" default=""
-       description="Path to a file which contains path to images. Those images will be used for int8 quantization." />
-
-  <let name="empty_container_is_specified" value="$(eval 'not &quot;$(var container_name)&quot;')" />
-  <!-- If container name is not specified,
-       execute function as an individual node  -->
-  <group if="$(var empty_container_is_specified)">
-      <node pkg="tensorrt_yolox" exec="tensorrt_yolox_node_exe" name="tensorrt_yolox">
-        <remap from="~/in/image" to="$(var input/image)" />
-        <remap from="~/out/objects" to="$(var output/objects)" />
-        <remap from="~/out/image" to="$(var output/objects)/debug/image" />
-        <remap from="~/out/image/compressed" to="$(var output/objects)/debug/image/compressed" />
-        <remap from="~/out/image/compressedDepth" to="$(var output/objects)/debug/image/compressedDepth" />
-        <remap from="~/out/image/theora" to="$(var output/objects)/debug/image/theora" />
-        <param name="score_threshold" value="$(var score_threshold)" />
-        <param name="nms_threshold" value="$(var nms_threshold)" />
-        <param name="model_path" value="$(var model_path)" />
-        <param name="label_path" value="$(var label_path)" />
-        <param name="precision" value="$(var precision)" />
-        <param name="calibration_algorithm" value="$(var calibration_algorithm)" />
-        <param name="dla_core_id" value="$(var dla_core_id)" />
-        <param name="quantize_first_layer" value="$(var quantize_first_layer)" />
-        <param name="quantize_last_layer" value="$(var quantize_last_layer)" />
-        <param name="profile_per_layer" value="$(var profile_per_layer)" />
-        <param name="clip_value" value="$(var clip_value)" />
-        <param name="preprocess_on_gpu" value="$(var preprocess_on_gpu)" />
-        <param name="calibration_image_list_path" value="$(var calibration_image_list_path)" />
-      </node>
-  </group>
-
-  <!-- If container name is specified,
-       execute function as a composable node and load it into the container  -->
-  <group unless="$(var empty_container_is_specified)">
-    <load_composable_node target="$(var container_name)">
-      <composable_node pkg="tensorrt_yolox" plugin="tensorrt_yolox::TrtYoloXNode" name="tensorrt_yolox">
-        <remap from="~/in/image" to="$(var input/image)" />
-        <remap from="~/out/objects" to="$(var output/objects)" />
-        <remap from="~/out/image" to="$(var output/objects)/debug/image" />
-        <remap from="~/out/image/compressed" to="$(var output/objects)/debug/image/compressed" />
-        <remap from="~/out/image/compressedDepth" to="$(var output/objects)/debug/image/compressedDepth" />
-        <remap from="~/out/image/theora" to="$(var output/objects)/debug/image/theora" />
-        <param name="score_threshold" value="$(var score_threshold)" />
-        <param name="nms_threshold" value="$(var nms_threshold)" />
-        <param name="model_path" value="$(var model_path)" />
-        <param name="label_path" value="$(var label_path)" />
-        <param name="precision" value="$(var precision)" />
-        <param name="calibration_algorithm" value="$(var calibration_algorithm)" />
-        <param name="dla_core_id" value="$(var dla_core_id)" />
-        <param name="quantize_first_layer" value="$(var quantize_first_layer)" />
-        <param name="quantize_last_layer" value="$(var quantize_last_layer)" />
-        <param name="profile_per_layer" value="$(var profile_per_layer)" />
-        <param name="clip_value" value="$(var clip_value)" />
-        <param name="preprocess_on_gpu" value="$(var preprocess_on_gpu)" />
-        <param name="calibration_image_list_path" value="$(var calibration_image_list_path)" />
-        <extra_arg name="use_intra_process_comms" value="$(var use_intra_process)" />
-      </composable_node>
-    </load_composable_node>
-  </group>
+  <arg name="input/image" default="image_raw"/>
+  <arg name="output/objects" default="/perception/object_recognition/detection/rois0"/>
+  <arg name="model_name" default="yolox-sPlus-opt"/>
+  <arg name="data_path" default="$(env HOME)/autoware_data" description="packages data and artifacts directory path"/>
+  <arg name="yolox_param_path" default="$(find-pkg-share edge_auto_jetson_launch)/config/yolox_tiny.param.yaml"/>
+  <arg name="use_decompress" default="true" description="use image decompress"/>
+  <arg name="build_only" default="false" description="exit after trt engine is built"/>
+  <arg name="camera_id" default="0" />
+  
+  <node pkg="autoware_tensorrt_yolox" exec="autoware_tensorrt_yolox_node_exe" name="tensorrt_yolox_$(var camera_id)" output="screen">
+    <remap from="~/in/image" to="$(var input/image)"/>
+    <remap from="~/out/objects" to="$(var output/objects)"/>
+    <param from="$(var yolox_param_path)" allow_substs="true"/>
+    <param name="build_only" value="$(var build_only)"/>
+  </node>
 
 </launch>

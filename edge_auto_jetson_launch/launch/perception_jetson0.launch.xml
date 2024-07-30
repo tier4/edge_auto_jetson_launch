@@ -44,6 +44,7 @@
         <arg name="container_name" value="$(var container_name)" />
         <arg name="input/image" value="/sensing/camera/$(var camera_name)/image_raw" />
         <arg name="output/objects" value="tensorrt_yolox/rois$(var camera_id)" />
+        <arg name="camera_id" value="$(var camera_id)" />
       </include>
 
       <include file="$(find-pkg-share edge_auto_jetson_launch)/launch/bytetrack.launch.xml">
@@ -52,6 +53,7 @@
         <arg name="input/image" value="/sensing/camera/$(var camera_name)/image_raw" />
         <arg name="input/image/is_raw" value="True" />
         <arg name="output/objects" value="/perception/object_recognition/detection/rois$(var camera_id)" />
+        <arg name="camera_id" value="$(var camera_id)" />
       </include>
     </group>
   </group>  <!-- camera0  -->
@@ -95,12 +97,14 @@
       <push-ros-namespace namespace="perception/object_recognition/detection" />
       <include file="$(find-pkg-share edge_auto_jetson_launch)/launch/tensorrt_yolox.launch.xml">
         <arg name="container_name" value="$(var container_name)" />
+        <arg name="camera_id" value="$(var camera_id)" />
         <arg name="input/image" value="/sensing/camera/$(var camera_name)/image_raw" />
         <arg name="output/objects" value="tensorrt_yolox/rois$(var camera_id)" />
       </include>
 
       <include file="$(find-pkg-share edge_auto_jetson_launch)/launch/bytetrack.launch.xml">
         <arg name="container_name" value="$(var container_name)" />
+        <arg name="camera_id" value="$(var camera_id)" />
         <arg name="input/objects" value="tensorrt_yolox/rois$(var camera_id)" />
         <arg name="input/image" value="/sensing/camera/$(var camera_name)/image_raw" />
         <arg name="input/image/is_raw" value="True" />
