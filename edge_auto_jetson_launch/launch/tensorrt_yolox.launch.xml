@@ -4,8 +4,7 @@
   <arg name="output/objects" default="/perception/object_recognition/detection/rois0"/>
   <arg name="model_name" default="yolox-sPlus-opt"/>
   <arg name="data_path" default="$(env HOME)/autoware_data" description="packages data and artifacts directory path"/>
-  <arg name="yolox_param_path" default="$(find-pkg-share edge_auto_jetson_launch)/config/yolox_tiny.param.yaml"/>
-  <arg name="use_decompress" default="true" description="use image decompress"/>
+  <arg name="yolox_param_path" default="$(find-pkg-share edge_auto_jetson_launch)/config/yolox.param.yaml"/>
   <arg name="build_only" default="false" description="exit after trt engine is built"/>
   <arg name="camera_id" default="0" />
   
