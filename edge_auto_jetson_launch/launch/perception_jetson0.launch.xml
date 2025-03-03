@@ -2,6 +2,15 @@
   <arg name="vehicle_id" />
   <arg name="live_sensor" default="True"/>
   <arg name="perception" default="True"/>
+  <arg name="sensor_height" default="1.0"/>
+  <arg name="lidar_detection_model_type" description="options: `centerpoint`, `apollo`"/>
+
+  <arg name="voxel_grid_downsample_filter_size_x" default="0.3" />
+  <arg name="voxel_grid_downsample_filter_size_y" default="0.3" />
+  <arg name="voxel_grid_downsample_filter_size_z" default="0.1" />
+
+  <!-- base_link generation -->
+  <node pkg="tf2_ros" exec="static_transform_publisher" name="base_link_broadcaster" output="screen" args="--x 0.0 --y 0.0 --z $(var sensor_height) --qx 0.0 --qy 0.0 --qz 0.0 --qw 1.2 --frame-id base_link --child-frame-id hesai" />
 
   <!-- camera0 -->
   <group>
@@ -112,5 +121,125 @@
       </include>
     </group>
   </group>  <!-- camera1  -->
+
+  <!-- lidar -->
+  <!-- driver -->
+  <group>
+    <push-ros-namespace namespace="/sensing/lidar/"/>
+    <include file="$(find-pkg-share nebula_ros)/launch/hesai_launch_all_hw.xml">
+      <arg name="sensor_model" value="PandarQT128"/>
+    </include>
+  </group> <!-- driver -->
+  
+  <!-- perception -->
+  <group>
+    <push-ros-namespace namespace="/perception"/>
+    <group>
+      <include file="$(find-pkg-share edge_auto_launch)/launch/component/crop_box_filter.launch.xml">
+        <arg name="input/pointcloud" value="/sensing/lidar/pandar_points"/>
+        <arg name="output/pointcloud" value="cropped/pointcloud"/>
+        <arg name="frame_id" value="base_link"/>
+        <arg name="max_z" value="2.0"/>
+      </include>
+      <push-ros-namespace namespace="obstacle_segmentation"/>
+      <include file="$(find-pkg-share autoware_ground_segmentation)/launch/ray_ground_filter.launch.xml">
+        <arg name="input/pointcloud" value="/perception/cropped/pointcloud"/>
+        <arg name="output/pointcloud" value="/perception/obstacle_segmentation/pointcloud"/>
+      </include>
+    </group>
+
+    <group if="$(eval &quot;'$(var lidar_detection_model_type)'=='centerpoint'&quot;)">
+      <push-ros-namespace namespace="centerpoint"/>
+      <arg name="lidar_model_param_path" default="$(find-pkg-share autoware_lidar_centerpoint)/config"/>
+
+      <group>
+        <node pkg="autoware_pointcloud_preprocessor" exec="voxel_grid_downsample_filter_node" name="voxel_grid_downsample_filter_node">
+          <remap from="input" to="/sensing/lidar/pandar_points" />
+            <remap from="output" to="downsample/pointcloud" />
+            <param name="voxel_size_x" value="$(var voxel_grid_downsample_filter_size_x)" />
+            <param name="voxel_size_y" value="$(var voxel_grid_downsample_filter_size_y)" />
+            <param name="voxel_size_z" value="$(var voxel_grid_downsample_filter_size_z)" />
+        </node>
+
+        <include file="$(find-pkg-share autoware_lidar_centerpoint)/launch/lidar_centerpoint.launch.xml">
+          <arg name="input/pointcloud" value="downsample/pointcloud"/>
+          <arg name="output/objects" value="objects"/>
+          <arg name="model_param_path" value="$(find-pkg-share edge_auto_jetson_launch)/config/centerpoint_tiny.param.yaml"/>
+          <arg name="use_pointcloud_container" value="false"/>
+        </include>
+      </group>
+    </group>
+
+    <group if="$(eval &quot;'$(var lidar_detection_model_type)'=='apollo'&quot;)">
+      <push-ros-namespace namespace="apollo"/>
+      <group>
+        <include file="$(find-pkg-share autoware_lidar_apollo_instance_segmentation)/launch/lidar_apollo_instance_segmentation.launch.xml">
+          <arg name="input/pointcloud" value="/sensing/lidar/pandar_points"/>
+          <arg name="output/objects" value="labeled_clusters"/>
+        </include>
+      </group>
+
+      <group>
+        <include file="$(find-pkg-share autoware_shape_estimation)/launch/shape_estimation.launch.xml">
+          <arg name="input/objects" value="labeled_clusters"/>
+          <arg name="output/objects" value="objects_with_feature"/>
+          <arg name="use_vehicle_reference_yaw" value="true"/>
+          <arg name="use_vehicle_reference_shape_size" value="false"/>
+        </include>
+      </group>
+
+      <group>
+        <include file="$(find-pkg-share autoware_detected_object_feature_remover)/launch/detected_object_feature_remover.launch.xml">
+          <arg name="input" value="objects_with_feature"/>
+          <arg name="output" value="objects"/>
+        </include>
+      </group>
+    </group>
+
+    <group>
+      <push-ros-namespace namespace="object_recognition/detection"/>
+      <group>
+        <push-ros-namespace namespace="euclidean_cluster"/>
+        <include file="$(find-pkg-share edge_auto_launch)/launch/component/voxel_grid_based_euclidean_cluster.launch.xml">
+          <arg name="input/pointcloud" value="/perception/obstacle_segmentation/pointcloud"/>
+          <arg name="output/objects" value="clusters"/>
+        </include>
+        <include file="$(find-pkg-share autoware_shape_estimation)/launch/shape_estimation.launch.xml">
+          <arg name="input/objects" value="clusters"/>
+          <arg name="output/objects" value="objects_with_feature"/>
+          <arg name="node_name" value="shape_estimation"/>
+        </include>
+        <include file="$(find-pkg-share autoware_detected_object_feature_remover)/launch/detected_object_feature_remover.launch.xml">
+          <arg name="input" value="objects_with_feature"/>
+          <arg name="output" value="/perception/object_recognition/detection/euclidean_cluster/objects"/>
+          <arg name="node_name" value="detected_object_feature_remover"/>
+        </include>
+      </group>
+    </group>
+    <group>
+      <push-ros-namespace namespace="image_projection_based_fusion"/>
+      <include file="$(find-pkg-share edge_auto_launch)/launch/component/roi_cluster_fusion.launch.xml">
+        <arg name="input/clusters" value="/perception/object_recognition/detection/euclidean_cluster/clusters"/>
+        <arg name="output/clusters" value="clusters"/>
+        <arg name="input/rois_number" value="2"/>
+        <arg name="input/rois0" value="/perception/object_recognition/detection/rois0"/>
+        <arg name="input/camera_info0" value="/sensing/camera/camera0/camera_info"/>
+        <arg name="input/rois1" value="/perception/object_recognition/detection/rois1"/>
+        <arg name="input/camera_info1" value="/sensing/camera/camera1/camera_info"/>
+      </include>
+      <include file="$(find-pkg-share autoware_shape_estimation)/launch/shape_estimation.launch.xml">
+        <arg name="input/objects" value="clusters"/>
+        <arg name="output/objects" value="objects_with_feature"/>
+        <arg name="node_name" value="shape_estimation"/>
+      </include>
+      <include file="$(find-pkg-share autoware_detected_object_feature_remover)/launch/detected_object_feature_remover.launch.xml">
+        <arg name="input" value="objects_with_feature"/>
+        <arg name="output" value="/perception/object_recognition/detection/objects"/>
+        <arg name="node_name" value="detected_object_feature_remover"/>
+      </include>
+    </group>
+    
+  </group> 
+   <!-- perception -->
 
 </launch>
