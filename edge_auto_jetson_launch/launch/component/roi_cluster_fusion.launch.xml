@@ -1,0 +1,36 @@
+<launch>
+  <arg name="input/rois_number" default="2"/>
+  <arg name="input/rois0" default="/perception/object_recognition/detection/rois0"/>
+  <arg name="input/camera_info0" default="/sensing/camera/camera0/camera_info"/>
+  <arg name="input/rois1" default="/perception/object_recognition/detection/rois1"/>
+  <arg name="input/camera_info1" default="/sensing/camera/camera1/camera_info"/>
+
+  <arg name="input/clusters" default="input/clusters"/>
+  <arg name="output/clusters" default="output/clusters"/>
+  <arg name="sync_param_path" default="$(find-pkg-share edge_auto_jetson_launch)/config/roi_sync.param.yaml"/>
+  <arg name="param_path" default="$(find-pkg-share edge_auto_jetson_launch)/config/roi_cluster_fusion.param.yaml"/>
+
+  <!-- for eval variable-->
+  <arg name="input_rois_number" default="$(var input/rois_number)"/>
+
+  <!-- debug -->
+  <arg name="input/image0" default="/image_raw0"/>
+  <arg name="input/image1" default="/image_raw1"/>
+
+  <group>
+    <node pkg="autoware_image_projection_based_fusion" exec="roi_cluster_fusion_node" name="roi_cluster_fusion" output="screen">
+      <param name="rois_number" value="$(var input/rois_number)"/>
+      <param from="$(var sync_param_path)"/>
+      <param from="$(var param_path)"/>
+      <remap from="input" to="$(var input/clusters)"/>
+      <remap from="output" to="$(var output/clusters)"/>
+
+      <param name="input/rois0" value="$(var input/rois0)"/>
+      <param name="input/camera_info0" value="$(var input/camera_info0)"/>
+      <param name="input/image0" value="$(var input/image0)"/>
+      <param name="input/rois1" value="$(var input/rois1)"/>
+      <param name="input/camera_info1" value="$(var input/camera_info1)"/>
+      <param name="input/image1" value="$(var input/image1)"/>
+    </node>
+  </group>
+</launch>

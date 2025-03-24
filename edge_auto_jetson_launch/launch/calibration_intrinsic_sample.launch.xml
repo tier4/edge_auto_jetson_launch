@@ -1,0 +1,7 @@
+<launch>
+  <arg name="config_path" default="$(find-pkg-share edge_auto_jetson_launch)/config/intrinsics_camera_calibrator.yaml"/>
+
+  <include file="$(find-pkg-share edge_auto_jetson_launch)/launch/component/intrinsic_camera_calibrator.launch.xml">
+    <arg name="config_path" value="$(var config_path)"/>
+  </include>
+</launch>

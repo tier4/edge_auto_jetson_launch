@@ -1,0 +1,15 @@
+<launch>
+  <arg name="input/pointcloud" default="input/pointcloud"/>
+  <arg name="output/objects" default="output/clusters"/>
+  <arg name="param_path" default="$(find-pkg-share edge_auto_jetson_launch)/config/voxel_grid_based_euclidean_cluster.param.yaml"/>
+
+  <group>
+    <node_container pkg="rclcpp_components" exec="component_container" name="container" namespace="">
+      <composable_node pkg="autoware_euclidean_cluster" plugin="autoware::euclidean_cluster::VoxelGridBasedEuclideanClusterNode" name="euclidean_cluster" namespace="">
+        <remap from="input" to="$(var input/pointcloud)"/>
+        <remap from="output" to="$(var output/objects)"/>
+        <param from="$(var param_path)"/>
+      </composable_node>
+    </node_container>
+  </group>
+</launch>

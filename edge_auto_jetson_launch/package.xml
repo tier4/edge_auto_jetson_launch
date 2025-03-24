@@ -19,6 +19,30 @@
   <exec_depend>autoware_bytetrack</exec_depend>
   <exec_depend>intrinsic_camera_calibrator</exec_depend>
   <exec_depend>autoware_image_transport_decompressor</exec_depend>
+  <!-- <exec_depend>edge_auto_launch</exec_depend> -->
+  
+  <exec_depend>nebula_ros</exec_depend>
+  <exec_depend>autoware_shape_estimation</exec_depend>
+  <exec_depend>autoware_perception_rviz_plugin</exec_depend>
+  <exec_depend>autoware_pointcloud_preprocessor</exec_depend>
+  <exec_depend>autoware_detected_object_feature_remover</exec_depend>
+  <exec_depend>autoware_euclidean_cluster</exec_depend>
+  <exec_depend>autoware_ground_segmentation</exec_depend>
+  <exec_depend>intrinsic_camera_calibrator</exec_depend>
+  <exec_depend>autoware_lidar_centerpoint</exec_depend>
+  <exec_depend>nebula_sensor_driver</exec_depend>
+  <exec_depend>rviz2</exec_depend>
+  <exec_depend>autoware_vehicle_info_utils</exec_depend>
+  <exec_depend>autoware_image_transport_decompressor</exec_depend>
+  <exec_depend>individual_params</exec_depend>
+  <exec_depend>autoware_image_projection_based_fusion</exec_depend>
+  <exec_depend>image_transport_plugins</exec_depend>
+  <exec_depend>topic_tools</exec_depend>
+
+  <exec_depend>sensor_calibration_manager</exec_depend> 
+  <exec_depend>tag_based_pnp_calibrator</exec_depend>
+  <exec_depend>autoware_shape_estimation</exec_depend>
+  <exec_depend>sensor_calibration_tools</exec_depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>

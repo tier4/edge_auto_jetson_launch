@@ -1,0 +1,25 @@
+/**:
+  ros__parameters:
+    input_offset_ms: [50.0, 50.0]
+    timeout_ms: 70.0
+    match_threshold_ms: 50.0
+    image_buffer_size: 15
+    # projection setting for each ROI whether unrectify image
+    point_project_to_unrectified_image: [false, false]
+    debug_mode: false
+    filter_scope_min_x: -100.0
+    filter_scope_min_y: -100.0
+    filter_scope_min_z: -100.0
+    filter_scope_max_x: 100.0
+    filter_scope_max_y: 100.0
+    filter_scope_max_z: 100.0
+
+    # camera cache setting for each ROI
+    approximate_camera_projection: [true, true]
+    # grid size in pixels
+    approximation_grid_cell_width: 1.0
+    approximation_grid_cell_height: 1.0
+
+    # debug parameters
+    publish_processing_time_detail: false
+

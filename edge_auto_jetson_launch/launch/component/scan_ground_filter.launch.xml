@@ -1,0 +1,16 @@
+<launch>
+  <arg name="input/pointcloud" default="input/pointcloud"/>
+  <arg name="output/pointcloud" default="output/pointcloud"/>
+  <arg name="param_path" default="$(find-pkg-share edge_auto_jetson_launch)/config/scan_ground_filter.param.yaml"/>
+
+  <group>
+    <push-ros-namespace namespace="ground_segmentation"/>
+    <node_container pkg="rclcpp_components" exec="component_container" name="container" namespace="">
+      <composable_node pkg="autoware_ground_segmentation" plugin="autoware::ground_segmentation::ScanGroundFilterComponent" name="ground_segmentation" namespace="">
+        <remap from="input" to="$(var input/pointcloud)"/>
+        <remap from="output" to="$(var output/pointcloud)"/>
+        <param from="$(var param_path)"/>
+      </composable_node>
+    </node_container>
+  </group>
+</launch>

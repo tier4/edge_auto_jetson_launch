@@ -3,15 +3,15 @@
   <arg name="live_sensor" default="True"/>
   <arg name="perception" default="True"/>
   <arg name="sensor_height" default="1.0"/>
-  <arg name="lidar_detection_model_type" description="options: `centerpoint`, `apollo`"/>
+  <arg name="lidar_detection_model_type" default="" description="options: `centerpoint`, `apollo`"/>
 
   <arg name="voxel_grid_downsample_filter_size_x" default="0.3" />
   <arg name="voxel_grid_downsample_filter_size_y" default="0.3" />
   <arg name="voxel_grid_downsample_filter_size_z" default="0.1" />
 
-  <!-- base_link generation -->
-  <node pkg="tf2_ros" exec="static_transform_publisher" name="base_link_broadcaster" output="screen" args="--x 0.0 --y 0.0 --z $(var sensor_height) --qx 0.0 --qy 0.0 --qz 0.0 --qw 1.2 --frame-id base_link --child-frame-id hesai" />
-
+  <!-- ======================================================================================= -->
+  <!-- camera perception -->
+  <!-- ======================================================================================= -->
   <!-- camera0 -->
   <group>
     <let name="camera_id" value="0"/>
@@ -21,21 +21,16 @@
     <let name="container_name" value="$(var camera_name)_container" />
     <node pkg="rclcpp_components" exec="component_container_mt" name="$(var container_name)" namespace="/"/>
 
-    <!-- sensing -->
+    <!-- camera0 -->
     <group if="$(var live_sensor)">
       <push-ros-namespace namespace="sensing/camera/$(var camera_name)" />
       <include file="$(find-pkg-share edge_auto_jetson_launch)/launch/v4l2_camera.launch.xml">
         <arg name="container_name" value="$(var container_name)" />
-	      <arg name="camera_frame_id" value="$(var camera_name)/camera_optical_link" />
-        <arg name="v4l2_camera_param_path" value="$(find-pkg-share individual_params)/config/$(var vehicle_id)/$(var camera_name)/v4l2_camera.param.yaml" />
-	      <arg name="camera_info_url" value="file://$(find-pkg-share individual_params)/config/$(var vehicle_id)/$(var camera_name)/camera_info.yaml" />
-        <arg name="publish_rate" value="-1.0" />
+          <arg name="camera_frame_id" value="$(var camera_name)/camera_optical_link" />
+          <arg name="v4l2_camera_param_path" value="$(find-pkg-share individual_params)/config/$(var vehicle_id)/$(var camera_name)/v4l2_camera.param.yaml" />
+          <arg name="camera_info_url" value="file://$(find-pkg-share individual_params)/config/$(var vehicle_id)/$(var camera_name)/camera_info.yaml" />
+          <arg name="publish_rate" value="-1.0" />
       </include>
-
-      <!-- Run a trigger node as individual process to keep time interval accuracy -->
-      <node pkg="sensor_trigger" exec="sensor_trigger_exe" name="sensor_trigger">
-        <param from="$(find-pkg-share individual_params)/config/$(var vehicle_id)/$(var camera_name)/trigger.param.yaml"/>
-      </node>
     </group>
     <group unless="$(var live_sensor)">
       <push-ros-namespace namespace="sensing/camera/$(var camera_name)" />
@@ -54,6 +49,7 @@
         <arg name="input/image" value="/sensing/camera/$(var camera_name)/image_raw" />
         <arg name="output/objects" value="tensorrt_yolox/rois$(var camera_id)" />
         <arg name="camera_id" value="$(var camera_id)" />
+        <arg name="yolox_param_path" value="$(find-pkg-share edge_auto_jetson_launch)/config/yolox.param.yaml"/>
       </include>
 
       <include file="$(find-pkg-share edge_auto_jetson_launch)/launch/bytetrack.launch.xml">
@@ -61,11 +57,12 @@
         <arg name="input/objects" value="tensorrt_yolox/rois$(var camera_id)" />
         <arg name="input/image" value="/sensing/camera/$(var camera_name)/image_raw" />
         <arg name="input/image/is_raw" value="True" />
-        <arg name="output/objects" value="/perception/object_recognition/detection/rois$(var camera_id)" />
         <arg name="camera_id" value="$(var camera_id)" />
+        <arg name="output/objects" value="/perception/object_recognition/detection/rois$(var camera_id)" />
       </include>
     </group>
   </group>  <!-- camera0  -->
+
 
   <!-- camera1 -->
   <group>
@@ -76,21 +73,16 @@
     <let name="container_name" value="$(var camera_name)_container" />
     <node pkg="rclcpp_components" exec="component_container_mt" name="$(var container_name)" namespace="/"/>
 
-    <!-- sensing -->
+    <!-- camera1 -->
     <group if="$(var live_sensor)">
       <push-ros-namespace namespace="sensing/camera/$(var camera_name)" />
       <include file="$(find-pkg-share edge_auto_jetson_launch)/launch/v4l2_camera.launch.xml">
         <arg name="container_name" value="$(var container_name)" />
-        <arg name="camera_frame_id" value="$(var camera_name)/camera_optical_link" />
-        <arg name="v4l2_camera_param_path" value="$(find-pkg-share individual_params)/config/$(var vehicle_id)/$(var camera_name)/v4l2_camera.param.yaml" />
-	      <arg name="camera_info_url" value="file://$(find-pkg-share individual_params)/config/$(var vehicle_id)/$(var camera_name)/camera_info.yaml" />
-        <arg name="publish_rate" value="-1.0" />
+          <arg name="camera_frame_id" value="$(var camera_name)/camera_optical_link" />
+          <arg name="v4l2_camera_param_path" value="$(find-pkg-share individual_params)/config/$(var vehicle_id)/$(var camera_name)/v4l2_camera.param.yaml" />
+	  <arg name="camera_info_url" value="file://$(find-pkg-share individual_params)/config/$(var vehicle_id)/$(var camera_name)/camera_info.yaml" />
+          <arg name="publish_rate" value="-1.0" />
       </include>
-
-      <!-- Run a trigger node as individual process to keep time interval accuracy -->
-      <node pkg="sensor_trigger" exec="sensor_trigger_exe" name="sensor_trigger">
-        <param from="$(find-pkg-share individual_params)/config/$(var vehicle_id)/$(var camera_name)/trigger.param.yaml"/>
-      </node>
     </group>
     <group unless="$(var live_sensor)">
       <push-ros-namespace namespace="sensing/camera/$(var camera_name)" />
@@ -106,36 +98,63 @@
       <push-ros-namespace namespace="perception/object_recognition/detection" />
       <include file="$(find-pkg-share edge_auto_jetson_launch)/launch/tensorrt_yolox.launch.xml">
         <arg name="container_name" value="$(var container_name)" />
-        <arg name="camera_id" value="$(var camera_id)" />
         <arg name="input/image" value="/sensing/camera/$(var camera_name)/image_raw" />
         <arg name="output/objects" value="tensorrt_yolox/rois$(var camera_id)" />
+	<arg name="camera_id" value="$(var camera_id)" />
+	<arg name="yolox_param_path" value="$(find-pkg-share edge_auto_jetson_launch)/config/yolox.param.yaml"/>
       </include>
 
       <include file="$(find-pkg-share edge_auto_jetson_launch)/launch/bytetrack.launch.xml">
         <arg name="container_name" value="$(var container_name)" />
-        <arg name="camera_id" value="$(var camera_id)" />
         <arg name="input/objects" value="tensorrt_yolox/rois$(var camera_id)" />
         <arg name="input/image" value="/sensing/camera/$(var camera_name)/image_raw" />
         <arg name="input/image/is_raw" value="True" />
+        <arg name="camera_id" value="$(var camera_id)" />
         <arg name="output/objects" value="/perception/object_recognition/detection/rois$(var camera_id)" />
       </include>
     </group>
   </group>  <!-- camera1  -->
 
-  <!-- lidar -->
+  <!-- trigger -->
+  <group if="$(var live_sensor)">
+    <include file="$(find-pkg-share sensor_trigger)/launch/sensor_trigger.launch.xml">
+      <arg name="gpio_name" value="anvil_trigger"/>
+    </include>
+  </group>
+
+  <!-- ======================================================================================= -->
+  <!-- LiDAR perception -->
+  <!-- ======================================================================================= -->
+  <!-- base_link generation -->
+  <node pkg="tf2_ros" exec="static_transform_publisher" name="base_link_broadcaster" output="screen" args="--x 0.0 --y 0.0 --z $(var sensor_height) --qx 0.0 --qy 0.0 --qz 0.0 --qw 1.0 --frame-id base_link --child-frame-id lidar" />
+
+  <!-- camera-lidar calibration -->
+  <include file="$(find-pkg-share edge_auto_jetson_launch)/launch/component/lidar_camera_tf_publisher.launch.py">
+          <arg name="tf_file_path" value="$(find-pkg-share individual_params)/config/$(var vehicle_id)/xt32_to_camera0.json"/>
+  </include>
+  <include file="$(find-pkg-share edge_auto_jetson_launch)/launch/component/lidar_camera_tf_publisher.launch.py">
+          <arg name="tf_file_path" value="$(find-pkg-share individual_params)/config/$(var vehicle_id)/xt32_to_camera1.json"/>
+  </include>
+
+  <!-- vehicle_info -->
+  <include file="$(find-pkg-share autoware_vehicle_info_utils)/launch/vehicle_info.launch.py">
+    <arg name="vehicle_info_param_file" value="$(find-pkg-share individual_params)/config/$(var vehicle_id)/vehicle_info.param.yaml"/>
+  </include>
+
   <!-- driver -->
   <group>
     <push-ros-namespace namespace="/sensing/lidar/"/>
     <include file="$(find-pkg-share nebula_ros)/launch/hesai_launch_all_hw.xml">
-      <arg name="sensor_model" value="PandarQT128"/>
+      <arg name="sensor_model" value="PandarXT32"/>
+      <arg name="config_file" value="$(find-pkg-share edge_auto_jetson_launch)/config/PandarXT32.param.yaml"/>
     </include>
   </group> <!-- driver -->
-  
+
   <!-- perception -->
   <group>
     <push-ros-namespace namespace="/perception"/>
     <group>
-      <include file="$(find-pkg-share edge_auto_launch)/launch/component/crop_box_filter.launch.xml">
+      <include file="$(find-pkg-share edge_auto_jetson_launch)/launch/component/crop_box_filter.launch.xml">
         <arg name="input/pointcloud" value="/sensing/lidar/pandar_points"/>
         <arg name="output/pointcloud" value="cropped/pointcloud"/>
         <arg name="frame_id" value="base_link"/>
@@ -200,7 +219,7 @@
       <push-ros-namespace namespace="object_recognition/detection"/>
       <group>
         <push-ros-namespace namespace="euclidean_cluster"/>
-        <include file="$(find-pkg-share edge_auto_launch)/launch/component/voxel_grid_based_euclidean_cluster.launch.xml">
+        <include file="$(find-pkg-share edge_auto_jetson_launch)/launch/component/voxel_grid_based_euclidean_cluster.launch.xml">
           <arg name="input/pointcloud" value="/perception/obstacle_segmentation/pointcloud"/>
           <arg name="output/objects" value="clusters"/>
         </include>
@@ -218,7 +237,7 @@
     </group>
     <group>
       <push-ros-namespace namespace="image_projection_based_fusion"/>
-      <include file="$(find-pkg-share edge_auto_launch)/launch/component/roi_cluster_fusion.launch.xml">
+      <include file="$(find-pkg-share edge_auto_jetson_launch)/launch/component/roi_cluster_fusion.launch.xml">
         <arg name="input/clusters" value="/perception/object_recognition/detection/euclidean_cluster/clusters"/>
         <arg name="output/clusters" value="clusters"/>
         <arg name="input/rois_number" value="2"/>
@@ -234,12 +253,15 @@
       </include>
       <include file="$(find-pkg-share autoware_detected_object_feature_remover)/launch/detected_object_feature_remover.launch.xml">
         <arg name="input" value="objects_with_feature"/>
-        <arg name="output" value="/perception/object_recognition/detection/objects"/>
+        <arg name="output" value="objects"/>
         <arg name="node_name" value="detected_object_feature_remover"/>
       </include>
     </group>
     
   </group> 
    <!-- perception -->
+  <!-- visualization -->
+  <node pkg="rviz2" exec="rviz2" name="rviz2" output="screen" args="-d $(find-pkg-share edge_auto_jetson_launch)/config/visualization/perception_xt32_sample.rviz"/>
+  <node pkg="rqt_gui" exec="rqt_gui" name="rqt_gui" output="screen" args="--perspective-file $(find-pkg-share edge_auto_jetson_launch)/config/visualization/perception_xt32_sample.perspective"/>
 
 </launch>
