@@ -13,7 +13,7 @@
 
   <!-- driver -->
   <group>
-    <push-ros-namespace namespace="/sensing/lidar/"/>
+    <push-ros-namespace namespace="/sensing/lidar/xt32/"/>
     <include file="$(find-pkg-share nebula_ros)/launch/hesai_launch_all_hw.xml">
       <arg name="sensor_model" value="PandarXT32"/>
       <arg name="config_file" value="$(find-pkg-share edge_auto_jetson_launch)/config/PandarXT32.param.yaml"/>
