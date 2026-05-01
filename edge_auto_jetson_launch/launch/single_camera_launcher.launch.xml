@@ -1,0 +1,27 @@
+<launch>
+  <arg name="camera" default="camera0" description="target camera name (e.g. camera0, camera1)" />
+  <arg name="launch_trigger" default="true" description="launch sensor_trigger node" />
+  <arg name="vehicle_id" default="default" />
+  
+  <group if="$(var launch_trigger)">
+    <include file="$(find-pkg-share sensor_trigger)/launch/sensor_trigger.launch.xml">
+      <arg name="gpio_name" value="anvil_trigger"/>
+    </include>
+  </group>
+
+  <group>
+    <let name="container_name" value="$(var camera)_container" />
+    <node pkg="rclcpp_components" exec="component_container_mt" name="$(var container_name)" namespace="/"/>
+
+    <push-ros-namespace namespace="sensing/camera/$(var camera)" />
+    
+    <include file="$(find-pkg-share edge_auto_jetson_launch)/launch/v4l2_camera.launch.xml">
+      <arg name="container_name" value="$(var container_name)" />
+      <arg name="camera_frame_id" value="$(var camera)/camera_optical_link" />
+      <arg name="v4l2_camera_param_path" value="$(find-pkg-share individual_params)/config/$(var vehicle_id)/$(var camera)/v4l2_camera.param.yaml" />
+      <arg name="camera_info_url" value="file://$(find-pkg-share individual_params)/config/$(var vehicle_id)/$(var camera)/camera_info.yaml" />
+      <arg name="publish_rate" value="-1.0" />
+    </include>
+  </group>
+
+</launch>
